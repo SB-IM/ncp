@@ -1,0 +1,6 @@
+api_host: "localhost:3000"
+id: 1
+
+ctl:
+  host: "localhost"
+  port: 3300
