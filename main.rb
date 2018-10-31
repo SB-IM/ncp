@@ -4,8 +4,7 @@ require 'socket'
 
 
 config = YAML.load_file('./config.yml')
-
-puts config
+#puts config
 
 socket = TCPSocket.new config['ctl']['hostname'], config['ctl']['port']
 sleep 1    # 这里延时连接的确认信息
@@ -15,6 +14,8 @@ puts socket.recvmsg
 
 
 ncpc = Ncp.new config['api_host'], config['id']
+
+@status = {}
 
 thr = Thread.new do
   while true do
@@ -45,7 +46,7 @@ while true do
     #end
     puts "+++++++++++++"
     #puts socket.recvmsg
-    puts socket.gets
+    puts socket.gets.chomp
     #ncpc.finish_mission response[0]['id']
 
     # 这个延时没什么意义，为了调试方便

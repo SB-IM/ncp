@@ -1,15 +1,13 @@
 require 'json'
-#require 'open-uri'
 require 'rest-client'
 
-#module Ncp
 class Ncp
-#  attr_accessor :api_host, :id, :token
-
-  def initialize api_host, id, token=''
+  def initialize api_host, id, token='', retry_time=1
     @api_host = api_host
     @id = id
     @token = token
+
+    @retry_time = retry_time.to_i
 
     api_ver = "/api/v1"
     @api_heartbeat = "#{api_ver}/nodes/#{id}/status_lives/"
@@ -34,7 +32,9 @@ class Ncp
         JSON.parse(RestClient.send rest, @api_host + api)
       rescue => e
         puts "Err: #{e}"
+        sleep @retry_time
+
+        retry
       end
     end
-
 end
