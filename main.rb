@@ -17,41 +17,57 @@ ncpc = Ncp.new config['api_host'], config['id']
 
 @status = {}
 
-thr = Thread.new do
-  while true do
+threads = []
+
+threads << Thread.new do
+  loop do
     @status = ncpc.heartbeat
     #puts @status
     sleep @status['delay']
   end
 end
 
-# 这个值是考虑网络延时。。
-sleep 3
-
-pp @status
-
-
-#run = []
-
-while true do
-#
-#  status = ncpc.heartbeat
-  if @status['has_msg?']
-    response = ncpc.get_mission
-    #pp response
-    #if run
-    #  run << response
-      #socket.sendmsg response[0]['name']
+threads << Thread.new do
+  loop do
+    if @status['has_msg?']
+      response = ncpc.get_mission
       socket.puts response[0]['name']
-    #end
-    puts "+++++++++++++"
-    #puts socket.recvmsg
-    puts socket.gets.chomp
-    #ncpc.finish_mission response[0]['id']
 
-    # 这个延时没什么意义，为了调试方便
-    sleep 3
+      puts "+++++++++++++"
+      #puts socket.recvmsg
+      puts socket.gets.chomp
+      ncpc.finish_mission response[0]['id']
 
+      # 这个延时没什么意义，为了调试方便
+      sleep 3
+
+    end
   end
 end
+
+sleep 3
+
+#pp @status
+
+#thr.join
+
+puts "===== started ====="
+
+#thr.exit
+#Thread.kill(thr)
+
+
+#socket.puts "2333333333"
+#socket.close
+
+loop do end
+
+
+#[:INT, :QUIT, :TERM].each do |sig|
+#[:QUIT].each do |sig|
+#  trap(sig) do
+#    # clear pid file
+#    puts "#{sig} signal received, exit!"
+#  end
+#end
 
