@@ -10,12 +10,12 @@ class Ncp
     @retry_time = retry_time.to_i
 
     api_ver = "/api/v1"
-    @api_heartbeat = "#{api_ver}/nodes/#{id}/status_lives/"
+    @api_heartbeat = "#{api_ver}/nodes/#{id}/status_lives/0"
     @api_mission = "#{api_ver}/nodes/#{id}/mission_queues/"
   end
 
   def heartbeat
-    connect_ncp
+    connect_ncp :patch
   end
 
   def get_mission
@@ -29,8 +29,9 @@ class Ncp
   private
     def connect_ncp rest=:get, api=@api_heartbeat
       begin
-        JSON.parse(RestClient.send rest, @api_host + api)
-      rescue => e
+        JSON.parse(RestClient.send rest, @api_host + api, { payload: '' })
+        #pp JSON.parse(RestClient.send rest, @api_host + api, {payload: { gps: {lng: 1, lat:2}}})
+      rescue Exception => e
         puts "Err: #{e}"
         sleep @retry_time
 
