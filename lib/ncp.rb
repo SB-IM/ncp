@@ -3,7 +3,6 @@ require 'rest-client'
 
 class Ncp
   def initialize api_host, id, token='', retry_time=1
-    @api_host = api_host
     @id = id
     @token = token
 
@@ -12,6 +11,8 @@ class Ncp
     api_ver = "/api/v1"
     @api_heartbeat = "#{api_ver}/nodes/#{id}/status_lives/0"
     @api_mission = "#{api_ver}/nodes/#{id}/mission_queues/"
+
+    @server = RestClient::Resource.new(api_host)
   end
 
   def heartbeat
@@ -27,10 +28,10 @@ class Ncp
   end
 
   private
-    def connect_ncp rest=:get, api=@api_heartbeat
+    def connect_ncp rest=:get, api=@api_heartbeat, payload=''
       begin
-        JSON.parse(RestClient.send rest, @api_host + api, { payload: '' })
-        #pp JSON.parse(RestClient.send rest, @api_host + api, {payload: { gps: {lng: 1, lat:2}}})
+        JSON.parse(@server[api].send rest, { payload: payload })
+        #pp JSON.parse(@server[api].send rest, { payload: { gps: {lng: 1, lat:2}} })
       rescue Exception => e
         puts "Err: #{e}"
         sleep @retry_time
