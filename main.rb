@@ -31,7 +31,7 @@ threads << Thread.new do
   loop do
     if @status['has_msg?']
       response = ncpc.get_mission
-      socket.puts response[0]['name']
+      socket.puts JSON.generate({ method: response[0]['name'] })
 
       puts "+++++++++++++"
       #puts socket.recvmsg
