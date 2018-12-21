@@ -15,8 +15,8 @@ class Ncp
     @server = RestClient::Resource.new(api_host)
   end
 
-  def heartbeat
-    connect_ncp :patch
+  def heartbeat payload=''
+    connect_ncp :patch, @api_heartbeat, payload
   end
 
   def get_mission
@@ -31,8 +31,8 @@ class Ncp
     def connect_ncp rest=:get, api=@api_heartbeat, payload=''
       begin
         JSON.parse(@server[api].send rest, { payload: payload })
-        #pp JSON.parse(@server[api].send rest, { payload: { gps: {lng: 1, lat:2}} })
       rescue Exception => e
+        puts @api
         puts "Err: #{e}"
         sleep @retry_time
 

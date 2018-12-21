@@ -15,13 +15,47 @@ puts socket.recvmsg
 
 ncpc = Ncp.new config['api_host'], config['id']
 
+@payload = {
+  link_id: ( config["link_id"] || 0 ),
+  gps: {
+    lat: "226876808",
+    lng: "1142248069"
+  }
+}
+
+####
+# type : air
+####
+
+  #@payload = {
+  #  link_id: 1,
+  #  gps: {
+  #    type: 4,
+  #    satellites: 8,
+  #    lat: "226876808",
+  #    lon: "1142248069",
+  #    height: "2.879999876022339"
+  #  },
+  #  battery: {
+  #    remain: "99",
+  #    voltage: "48369"
+  #  },
+  #  flight: {
+  #    speed: "0.3416789770126343",
+  #    time: "111",
+  #    status: "3",
+  #    mode: "0"
+  #  }
+  #}
+
+
 @status = {}
 
 threads = []
 
 threads << Thread.new do
   loop do
-    @status = ncpc.heartbeat
+    @status = ncpc.heartbeat(@payload)
     #puts @status
     sleep @status['delay']
   end
@@ -29,8 +63,8 @@ end
 
 threads << Thread.new do
   loop do
-    if @status['has_msg?']
-      response = ncpc.get_mission
+    if @status['has_msg?'] && (response = ncpc.get_mission).length != 0
+
       socket.puts JSON.generate({ method: response[0]['name'] })
 
       puts "+++++++++++++"
