@@ -6,11 +6,11 @@ require 'socket'
 config = YAML.load_file('./config.yml')
 #puts config
 
-socket = TCPSocket.new config['ctl']['hostname'], config['ctl']['port']
+socket = TCPSocket.new config['ctl']['host'], config['ctl']['port']
 sleep 1    # 这里延时连接的确认信息
 
 # 冲掉连接确认信息缓冲区
-puts socket.recvmsg
+#puts socket.recvmsg
 
 
 ncpc = Ncp.new config['api_host'], config['id']
@@ -65,11 +65,18 @@ threads << Thread.new do
   loop do
     if @status['has_msg?'] && (response = ncpc.get_mission).length != 0
 
+      puts "send socket #{response[0]['name']}"
+
       socket.puts JSON.generate({ method: response[0]['name'] })
 
       puts "+++++++++++++"
-      #puts socket.recvmsg
-      puts socket.gets.chomp
+
+      # not \n
+      puts socket.recvmsg
+
+      # have \n
+      #puts socket.gets.chomp
+
       ncpc.finish_mission response[0]['id']
 
       # 这个延时没什么意义，为了调试方便
