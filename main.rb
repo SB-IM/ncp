@@ -19,7 +19,7 @@ ncpc = Ncp.new config['api_host'], config['id']
   link_id: ( config["link_id"] || 0 ),
   gps: {
     lat: "226876808",
-    lng: "1142248069"
+    lon: "1142248069"
   }
 }
 
