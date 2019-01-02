@@ -63,7 +63,10 @@ end
 
 threads << Thread.new do
   loop do
-    if @status['has_msg?'] && (response = ncpc.get_mission).length != 0
+    response = ncpc.get_mission
+
+    # 注： 双重判断是为了消除时间差而产生的误差
+    if @status['has_msg?'] && response.length != 0
 
       puts "send socket #{response[0]['name']}"
 
