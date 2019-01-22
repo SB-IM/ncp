@@ -6,3 +6,7 @@ link_id: 2
 ctl:
   host: "localhost"
   port: 3300
+
+file:
+  map: '../map'
+

@@ -1,5 +1,6 @@
 require 'json'
 require 'rest-client'
+require 'open-uri'
 
 class Ncp
   def initialize api_host, id, token='', retry_time=1
@@ -27,10 +28,19 @@ class Ncp
     connect_ncp :delete, @api_mission + id.to_s
   end
 
+  def download source, target
+    #puts "#{api_host}/#{target}"
+
+    #File.open("#{api_host}/#{target}", 'wb') {|f| f.write(open(source) {|f1| f1.read})}
+    File.open(target, 'wb') {|f| f.write(open(source) {|f1| f1.read})}
+  end
+
   private
     def connect_ncp rest=:get, api=@api_heartbeat, payload=''
       begin
-        JSON.parse(@server[api].send rest, { payload: payload })
+        msg = JSON.parse(@server[api].send rest, { payload: payload })
+        #puts msg
+        msg
       rescue Exception => e
         puts @api
         puts "Err: #{e}"
@@ -39,4 +49,5 @@ class Ncp
         retry
       end
     end
+
 end

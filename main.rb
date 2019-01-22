@@ -68,20 +68,31 @@ threads << Thread.new do
     # 注： 双重判断是为了消除时间差而产生的误差
     if @status['has_msg?'] && response.length != 0
 
-      puts "send socket #{response[0]['name']}"
+      if response[0]['name'] =~ /^ncp.*/
+        puts "ncp cmd ==================="
+        pp response[0]['name'].split[3]
+        #pp config['file']
+        #pp config['file'][response[0]['name'].split[2]]
 
-      socket.puts JSON.generate({ method: response[0]['name'] })
+        ncpc.download response[0]['name'].split[3], config['file'][response[0]['name'].split[2]]
 
-      puts "+++++++++++++"
+        #ncpc.finish_mission response[0]['id']
+      else
+        puts "send socket #{response[0]['name']}"
 
-      # not \n
-      puts socket.recvmsg
+        socket.puts JSON.generate({ method: response[0]['name'] })
 
-      # have \n
-      #puts socket.gets.chomp
+        puts "+++++++++++++"
 
-      ncpc.finish_mission response[0]['id']
+        # not \n
+        puts socket.recvmsg
 
+        # have \n
+        #puts socket.gets.chomp
+
+        ncpc.finish_mission response[0]['id']
+
+      end
       # 这个延时没什么意义，为了调试方便
       sleep 3
 
