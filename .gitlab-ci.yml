@@ -8,3 +8,17 @@ rspec:
   script:
     - ruby -v
 
+deploy:
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan "$SSH_HOSTNAME"
+  stage: deploy
+  script: tar -cJf - ./ | ssh sb@api.sb.im 'mkdir -p ncp && cd ncp && tar -xJf -'
+  only:
+    refs:
+      - master
+
