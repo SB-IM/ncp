@@ -1,12 +1,12 @@
-before_script:
-  - ruby -v
-  - which ruby
-  - gem install bundler --no-document
-  - bundle install --jobs $(nproc)  "${FLAGS[@]}"
+#before_script:
+#  - ruby -v
+#  - which ruby
+#  - gem install bundler --no-document
+#  - bundle install --jobs $(nproc)  "${FLAGS[@]}"
 
-rspec:
-  script:
-    - ruby -v
+#rspec:
+#  script:
+#    - ruby -v
 
 deploy:
   before_script:
@@ -17,7 +17,7 @@ deploy:
     - chmod 700 ~/.ssh
     - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
-    - ls
+    - ls ~/.ssh/
 
   stage: deploy
   script: tar -cJf - ./ | ssh -v sb@api.sb.im 'mkdir -p ncp && cd ncp && tar -xJf -'
