@@ -1,5 +1,4 @@
 require 'mqtt'
-require 'open-uri'
 
 class Mqtt
   def initialize uri, id, token=''
@@ -31,10 +30,6 @@ class Mqtt
 
   def get_mission
     @server.get("nodes/#{@id}/ctl")
-  end
-
-  def download source, target
-    File.open(target, 'wb') {|f| f.write(open(source) {|f1| f1.read})}
   end
 
 end

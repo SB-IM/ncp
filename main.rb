@@ -1,4 +1,7 @@
+
 require './lib/ncp'
+require './lib/http'
+require './lib/mqtt'
 require 'yaml'
 require 'socket'
 
@@ -12,8 +15,9 @@ sleep 1    # 这里延时连接的确认信息
 # 冲掉连接确认信息缓冲区
 #puts socket.recvmsg
 
+mqtt = Mqtt.new config['mqtt'], config['id']
 
-ncpc = Ncp.new config['api_host'], config['id']
+ncpc = RestHttp.new config['api_host'], config['id']
 
 @payload = {
   link_id: ( config["link_id"] || 0 ),
@@ -53,9 +57,6 @@ ncpc = Ncp.new config['api_host'], config['id']
 
 threads = []
 
-require './lib/mqtt'
-mqtt = Mqtt.new config['mqtt'], config['id']
-
 threads << Thread.new do
   loop do
     topic, message = mqtt.get_mission
@@ -82,13 +83,10 @@ threads << Thread.new do
 
       if response[0]['name'] =~ /^ncp.*/
         puts "ncp cmd ==================="
-        pp response[0]['name'].split[3]
+        puts response[0]['name']
         #pp config['file']
-        #pp config['file'][response[0]['name'].split[2]]
 
-        ncpc.download response[0]['name'].split[3], config['file'][response[0]['name'].split[2]]
-
-        #ncpc.finish_mission response[0]['id']
+        NCP.download response[0]['name'].split[3], config['file'][response[0]['name'].split[2]]
       else
         puts "send socket #{response[0]['name']}"
 
@@ -101,10 +99,10 @@ threads << Thread.new do
 
         # have \n
         #puts socket.gets.chomp
-
-        ncpc.finish_mission response[0]['id']
-
       end
+
+      ncpc.finish_mission response[0]['id']
+
       # 这个延时没什么意义，为了调试方便
       sleep 3
 
