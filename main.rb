@@ -82,20 +82,14 @@ threads << Thread.new do
     if @status['has_msg?'] && response.length != 0
 
       if response[0]['name'] =~ /^ncp.*/
-        puts "ncp cmd ==================="
         puts response[0]['name']
-        #pp config['file']
-
         NCP.download response[0]['name'].split[3], config['file'][response[0]['name'].split[2]]
       else
         puts "send socket #{response[0]['name']}"
 
         socket.puts JSON.generate({ method: response[0]['name'] })
-
-        puts "+++++++++++++"
-
         # not \n
-        puts socket.recvmsg
+        puts "recv #{socket.recvmsg}"
 
         # have \n
         #puts socket.gets.chomp
@@ -112,17 +106,9 @@ end
 
 sleep 3
 
-#pp @status
-
-#thr.join
-
 puts "===== started ====="
 
-#thr.exit
 #Thread.kill(thr)
-
-
-#socket.puts "2333333333"
 #socket.close
 
 loop do end
