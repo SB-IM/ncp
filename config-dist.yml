@@ -1,6 +1,9 @@
 api_host: "localhost:3000"
 id: 1
 
+#mqtt: "mqtt[s]://[username][:password]@host.domain[:port]"
+mqtt: "mqtt://localhost:1883"
+
 link_id: 2
 
 ctl:

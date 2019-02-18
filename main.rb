@@ -53,6 +53,18 @@ ncpc = Ncp.new config['api_host'], config['id']
 
 threads = []
 
+require './lib/mqtt'
+mqtt = Mqtt.new config['mqtt'], config['id']
+
+threads << Thread.new do
+  loop do
+    topic, message = mqtt.get_mission
+
+    socket.puts JSON.generate({ method: message })
+    puts socket.recvmsg
+  end
+end
+
 threads << Thread.new do
   loop do
     @status = ncpc.heartbeat(@payload)
