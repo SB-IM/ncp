@@ -32,4 +32,8 @@ class Mqtt
     @server.get("nodes/#{@id}/ctl")
   end
 
+  def send_message payload=''
+    @server.publish(@api_heartbeat, payload.to_json)
+  end
+
 end

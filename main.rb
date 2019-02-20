@@ -2,9 +2,12 @@
 require './lib/ncp'
 require './lib/http'
 require './lib/mqtt'
+require './lib/help'
+require './lib/chain'
 require 'yaml'
 require 'socket'
 
+include Help
 
 config = YAML.load_file('./config.yml')
 #puts config
@@ -52,19 +55,36 @@ ncpc = RestHttp.new config['api_host'], config['id']
   #  }
   #}
 
-
 @status = {}
 
 threads = []
+
+incoming_chain = 'change_json', 'filter_ncp'
 
 threads << Thread.new do
   loop do
     topic, message = mqtt.get_mission
 
-    socket.puts JSON.generate({ method: message })
-    puts socket.recvmsg
+    #puts chain(message, incoming_chain)
+    socket.puts chain(message, incoming_chain)
+
   end
 end
+
+threads << Thread.new do
+  loop do
+    #message = socket.gets.chomp
+
+    #if is_json?(message)
+    #  puts "#{message} is json"
+    #else
+    #  puts "#{message} not json"
+    #end
+
+    mqtt.send_message socket.gets.chomp
+  end
+end
+
 
 threads << Thread.new do
   loop do
