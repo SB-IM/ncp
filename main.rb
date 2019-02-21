@@ -10,6 +10,8 @@ require 'socket'
 include Help
 
 config = YAML.load_file('./config.yml')
+
+$ncp = config['ncp']
 #puts config
 
 socket = TCPSocket.new config['ctl']['host'], config['ctl']['port']
@@ -66,7 +68,9 @@ threads << Thread.new do
     topic, message = mqtt.get_mission
 
     #puts chain(message, incoming_chain)
-    socket.puts chain(message, incoming_chain)
+    bool, msg = chain(message, incoming_chain)
+    #p bool
+    socket.puts msg if bool
 
   end
 end

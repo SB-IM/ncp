@@ -11,8 +11,8 @@ module Help
 
   def chain str, chain_lists
     bool, out_str = Chain.public_send(chain_lists.first, str)
-    chain(out_str, chain_lists[1...]) if bool && chain_lists.length > 1
-    out_str
+    bool, out_str = chain(out_str, chain_lists[1..-1]) if bool && chain_lists.length > 1
+    return bool, out_str
   end
 end
 

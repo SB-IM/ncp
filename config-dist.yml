@@ -10,6 +10,7 @@ ctl:
   host: "localhost"
   port: 3300
 
-file:
-  map: '../map'
+ncp:
+  file:
+    map: '../map'
 

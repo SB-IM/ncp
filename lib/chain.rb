@@ -7,17 +7,18 @@ module Chain
 
       return true, str
     rescue
-      return true, JSON.generate({ method: str.split.first, params: str.split[1..] })
+      return true, JSON.generate({ method: str.split.first, params: str.split[1..-1] })
     end
   end
 
   def self.filter_ncp str
-    puts JSON.parse(str)['method']
     if JSON.parse(str)['method'] == 'ncp'
-      puts "NCP" + str
+      p JSON.parse(str)['params']
+      #pp *JSON.parse(str)['params'][1..-1]
 
       # NCP...
-      # NCP.download response[0]['name'].split[3], config['file'][response[0]['name'].split[2]]
+      NCP.public_send JSON.parse(str)['params'].first, *JSON.parse(str)['params'][1..-1]
+      #NCP.public_send(JSON.parse(str)['params'].first) response[0]['name'].split[3], config['file'][response[0]['name'].split[2]]
       return false, str
     else
       return true, str
