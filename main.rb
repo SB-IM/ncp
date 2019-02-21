@@ -91,8 +91,12 @@ threads << Thread.new do
     #else
     #  puts "#{message} not json"
     #end
-
-    mqtt.send_message socket.gets.chomp
+    begin
+      mqtt.send_message socket.gets.chomp
+    rescue
+      log.error socket.gets
+      sleep 10
+    end
   end
 end
 
