@@ -6,6 +6,7 @@ require './lib/help'
 require './lib/chain'
 require 'yaml'
 require 'socket'
+require 'logger'
 
 include Help
 
@@ -13,6 +14,11 @@ config = YAML.load_file('./config.yml')
 
 $ncp = config['ncp']
 #puts config
+
+#log = Logger.new(STDOUT, level: :info)
+log = Logger.new(config['env'] == "development" ? STDOUT : "log/#{config['env']}.log", level: config['log_level'])
+
+$log = log
 
 socket = TCPSocket.new config['ctl']['host'], config['ctl']['port']
 sleep 1    # 这里延时连接的确认信息
@@ -66,6 +72,7 @@ incoming_chain = 'change_json', 'filter_ncp'
 threads << Thread.new do
   loop do
     topic, message = mqtt.get_mission
+    log.info "Sub == #{topic} #{message}"
 
     #puts chain(message, incoming_chain)
     bool, msg = chain(message, incoming_chain)
@@ -130,7 +137,7 @@ end
 
 sleep 3
 
-puts "===== started ====="
+log.warn "===== started ====="
 
 #Thread.kill(thr)
 #socket.close

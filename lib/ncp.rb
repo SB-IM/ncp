@@ -10,6 +10,7 @@ module NCP
   def self.download file, source
     #config = YAML.load_file('./config.yml')['ncp']
     #pp $ncp
+    $log.info "Ncp == #{__method__} #{file} #{source}"
     File.open($ncp['file'][file], 'wb') {|f| f.write(open(source) {|f1| f1.read})}
   end
 end

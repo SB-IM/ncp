@@ -33,6 +33,7 @@ class Mqtt
   end
 
   def send_message payload=''
+    $log.info "Pub == #{@api_heartbeat} #{payload.to_json}"
     @server.publish(@api_heartbeat, payload.to_json)
   end
 

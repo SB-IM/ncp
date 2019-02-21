@@ -8,4 +8,5 @@ gem "rest-client"
 
 gem "mqtt"
 
-# gem "rails"
+gem 'logger'
+

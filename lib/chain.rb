@@ -13,7 +13,7 @@ module Chain
 
   def self.filter_ncp str
     if JSON.parse(str)['method'] == 'ncp'
-      p JSON.parse(str)['params']
+      #p JSON.parse(str)['params']
       #pp *JSON.parse(str)['params'][1..-1]
 
       # NCP...
