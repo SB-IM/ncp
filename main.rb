@@ -147,7 +147,8 @@ log.warn "===== started ====="
 #Thread.kill(thr)
 #socket.close
 
-loop do end
+#loop do sleep 10 end
+threads.each { |thr| thr.join }
 
 
 #[:INT, :QUIT, :TERM].each do |sig|
