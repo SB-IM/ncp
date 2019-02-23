@@ -77,6 +77,7 @@ threads << Thread.new do
     #puts chain(message, incoming_chain)
     bool, msg = chain(message, incoming_chain)
     #p bool
+    #ncpc.finish_mission JSON.parse(msg)['id'] if JSON.parse(msg)['method'] == 'ncp'
     socket.puts msg if bool
 
   end
@@ -101,45 +102,45 @@ threads << Thread.new do
 end
 
 
-threads << Thread.new do
-  loop do
-    @status = ncpc.heartbeat(@payload)
-    #puts @status
-    sleep @status['delay']
-  end
-end
-
-threads << Thread.new do
-  loop do
-    response = ncpc.get_mission
-
-    # 注： 双重判断是为了消除时间差而产生的误差
-    if @status['has_msg?'] && response.length != 0
-
-      if response[0]['name'] =~ /^ncp.*/
-        puts response[0]['name']
-        NCP.download response[0]['name'].split[3], config['file'][response[0]['name'].split[2]]
-      else
-        puts "send socket #{response[0]['name']}"
-
-        socket.puts JSON.generate({ method: response[0]['name'] })
-        # not \n
-        puts "recv #{socket.recvmsg}"
-
-        # have \n
-        #puts socket.gets.chomp
-      end
-
-      ncpc.finish_mission response[0]['id']
-
-      # 这个延时没什么意义，为了调试方便
-      sleep 3
-
-    end
-  end
-end
-
-sleep 3
+#threads << Thread.new do
+#  loop do
+#    @status = ncpc.heartbeat(@payload)
+#    #puts @status
+#    sleep @status['delay']
+#  end
+#end
+#
+#threads << Thread.new do
+#  loop do
+#    response = ncpc.get_mission
+#
+#    # 注： 双重判断是为了消除时间差而产生的误差
+#    if @status['has_msg?'] && response.length != 0
+#
+#      if response[0]['name'] =~ /^ncp.*/
+#        puts response[0]['name']
+#        NCP.download response[0]['name'].split[3], config['file'][response[0]['name'].split[2]]
+#      else
+#        puts "send socket #{response[0]['name']}"
+#
+#        socket.puts JSON.generate({ method: response[0]['name'] })
+#        # not \n
+#        puts "recv #{socket.recvmsg}"
+#
+#        # have \n
+#        #puts socket.gets.chomp
+#      end
+#
+#      ncpc.finish_mission response[0]['id']
+#
+#      # 这个延时没什么意义，为了调试方便
+#      sleep 3
+#
+#    end
+#  end
+#end
+#
+#sleep 3
 
 log.warn "===== started ====="
 
