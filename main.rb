@@ -78,7 +78,11 @@ threads << Thread.new do
     bool, msg = chain(message, incoming_chain)
     #p bool
     #ncpc.finish_mission JSON.parse(msg)['id'] if JSON.parse(msg)['method'] == 'ncp'
-    socket.puts msg if bool
+    if bool
+      socket.puts msg
+    else
+      mqtt.send_message msg
+    end
 
   end
 end

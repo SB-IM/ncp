@@ -17,10 +17,9 @@ module Chain
       #p JSON.parse(str)['params']
       #pp *JSON.parse(str)['params'][1..-1]
 
-      # NCP...
       NCP.public_send JSON.parse(str)['params'].first, *JSON.parse(str)['params'][1..-1]
-      #NCP.public_send(JSON.parse(str)['params'].first) response[0]['name'].split[3], config['file'][response[0]['name'].split[2]]
-      return false, str
+
+      return false, JSON.generate({ jsonrpc: "2.0", result: JSON.parse(str)['method'], id: JSON.parse(str)['id'] })
     else
       return true, str
     end
