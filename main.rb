@@ -161,6 +161,7 @@ log.warn "===== started ====="
 end
 
 threads.each { |thr| thr.join }
+mqtt.offline
 
 log.warn "===== stoped  ====="
 

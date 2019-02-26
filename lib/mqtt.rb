@@ -24,6 +24,11 @@ class Mqtt
     @server.publish(@api_status, @status_map[:online].to_s, retain=true, qos=1)
   end
 
+  def offline
+    @server.publish(@api_status, @status_map[:offline].to_s, retain=true, qos=1)
+    @server.disconnect
+  end
+
   def heartbeat payload=''
     @server.publish(@api_heartbeat, payload.to_json)
   end
@@ -34,7 +39,7 @@ class Mqtt
 
   def send_message payload=''
     $log.info "Pub == #{@api_heartbeat} #{payload}"
-    @server.publish(@api_heartbeat, payload)
+    @server.publish(@api_heartbeat, payload, retain=true, qos=1)
   end
 
 end
