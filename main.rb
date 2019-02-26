@@ -148,18 +148,19 @@ end
 
 log.warn "===== started ====="
 
-#Thread.kill(thr)
-#socket.close
+[:INT, :QUIT, :TERM].each do |sig|
+#[:QUIT].each do |sig|
+  trap(sig) do
+    # clear pid file
+    puts "#{sig} signal received, exit!"
 
-#loop do sleep 10 end
+    threads.each { |thr| thr.exit }
+    socket.close
+    puts socket.inspect
+  end
+end
+
 threads.each { |thr| thr.join }
 
-
-#[:INT, :QUIT, :TERM].each do |sig|
-#[:QUIT].each do |sig|
-#  trap(sig) do
-#    # clear pid file
-#    puts "#{sig} signal received, exit!"
-#  end
-#end
+log.warn "===== stoped  ====="
 
