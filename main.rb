@@ -71,7 +71,7 @@ incoming_chain = 'change_json', 'filter_ncp'
 
 threads << Thread.new do
   loop do
-    topic, message = mqtt.get_mission
+    topic, message = mqtt.cloud_get
     log.info "Sub == #{topic} #{message}"
 
     #puts chain(message, incoming_chain)
@@ -89,15 +89,17 @@ end
 
 threads << Thread.new do
   loop do
-    #message = socket.gets.chomp
-
-    #if is_json?(message)
-    #  puts "#{message} is json"
-    #else
-    #  puts "#{message} not json"
-    #end
     begin
-      mqtt.send_message socket.gets.chomp
+      message = socket.gets.chomp
+
+      if is_json_rpc? message
+        #puts "#{message} is json"
+        mqtt.cloud_put socket.gets.chomp
+      else
+        #puts "#{message} not json"
+        mqtt.send_message socket.gets.chomp
+      end
+
     rescue
       log.error socket.gets
       sleep 10

@@ -1,7 +1,8 @@
 require 'mqtt'
 
 class Mqtt
-  def initialize uri, id, token=''
+  def initialize uri, id
+    #, token=''
     @id = id
     #@token = token
 
@@ -22,6 +23,7 @@ class Mqtt
       :will_retain => true)
 
     @server.publish(@api_status, @status_map[:online].to_s, retain=true, qos=1)
+    @server.subscribe("nodes/#{@id}/rpc/send" => 1)
   end
 
   def offline
@@ -33,8 +35,13 @@ class Mqtt
     @server.publish(@api_heartbeat, payload.to_json)
   end
 
-  def get_mission
-    @server.get("nodes/#{@id}/ctl")
+  def cloud_get
+    #@server.get("nodes/#{@id}/rpc/send" => 1)
+    @server.get
+  end
+
+  def cloud_put payload=''
+    @server.publish("nodes/#{@id}/rpc/recv", payload, retain=true, qos=1)
   end
 
   def send_message payload=''
