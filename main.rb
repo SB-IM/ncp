@@ -81,7 +81,7 @@ threads << Thread.new do
     if bool
       socket.puts msg
     else
-      mqtt.send_message msg
+      mqtt.cloud_put msg
     end
 
   end
