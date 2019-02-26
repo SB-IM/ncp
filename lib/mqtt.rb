@@ -41,6 +41,7 @@ class Mqtt
   end
 
   def cloud_put payload=''
+    $log.info "Pub == nodes/#{@id}/rpc/recv #{payload}"
     @server.publish("nodes/#{@id}/rpc/recv", payload, retain=true, qos=1)
   end
 

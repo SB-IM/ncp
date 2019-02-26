@@ -94,10 +94,12 @@ threads << Thread.new do
 
       if is_json_rpc? message
         #puts "#{message} is json"
-        mqtt.cloud_put socket.gets.chomp
+        #log.info "Pub == #{message}"
+        mqtt.cloud_put message
       else
         #puts "#{message} not json"
-        mqtt.send_message socket.gets.chomp
+        #log.info "Pub == #{message}"
+        mqtt.send_message message
       end
 
     rescue
