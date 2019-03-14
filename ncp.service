@@ -1,0 +1,12 @@
+[Unit]
+Description=Node control protocol module
+After=network.target
+Requires=dockctl.service
+
+[Service]
+User=dockctl
+WorkingDirectory=/var/lib/dockctl/ncp
+ExecStart=/bin/sh /var/lib/dockctl/ncp/ncp.sh
+
+[Install]
+WantedBy=multi-user.target
