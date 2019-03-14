@@ -4,8 +4,6 @@ id: 1
 #mqtt: "mqtt[s]://[username][:password]@host.domain[:port]"
 mqtt: "mqtt://admin:public@localhost:1883"
 
-link_id: 2
-
 ctl:
   host: "localhost"
   port: 3300
@@ -19,6 +17,12 @@ env: "development"
 log_level: "info"
 
 ncp:
-  file:
+  download:
     map: '../map'
+  status:
+    - link_id: 2
+    - position_ok: true
+    - lat: "22.0000100001"
+    - lng: "144.0000100001"
+    - alt: "10088.0001"
 
