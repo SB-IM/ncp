@@ -10,3 +10,5 @@ gem "mqtt"
 
 gem 'logger'
 
+gem 'rspec'
+
