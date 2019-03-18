@@ -17,6 +17,8 @@ module Chain
       #p JSON.parse(str)['params']
       #pp *JSON.parse(str)['params'][1..-1]
 
+      $log.info "Ncp == #{JSON.parse(str)['params']} #{file} #{target}"
+
       result = NCP.public_send JSON.parse(str)['params'].first, *JSON.parse(str)['params'][1..-1]
 
       return false, JSON.generate({ jsonrpc: "2.0", result: result, id: JSON.parse(str)['id'] })
