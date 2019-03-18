@@ -1,13 +1,11 @@
-require './lib/ncp'
+require 'json'
 
 module Chain
   def self.change_json str
     begin
       !!JSON.parse(str)
-
       return true, str
     rescue
-      #return true, JSON.generate({ jsonrpc: "2.0", method: str.split.first, params: str.split[1..-1], id: "0" })
       return true, JSON.generate({ jsonrpc: "2.0", method: str.split.first, params: str.split[1..-1], id: Time.now.to_i.to_s })
     end
   end

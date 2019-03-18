@@ -1,26 +1,21 @@
 require 'open-uri'
 require 'yaml'
 
-
-module NCP
-  #def self.download source, target
-  #  File.open(target, 'wb') {|f| f.write(open(source) {|f1| f1.read})}
-  #end
-
-  def self.download file, source
-    config = $ncp[__method__.to_s]
-    #config = YAML.load_file('./config.yml')['ncp']
-    #pp $ncp
-    File.open(config[file], 'wb') {|f| f.write(open(source) {|f1| f1.read})}
+class NCP
+  def initialize(config)
+    @config=config
   end
 
-  def self.upload file, target
-    config = $ncp[__method__.to_s]
-
-    File.open(target, 'wb') {|f| f.write(open(config[file]) {|f1| f1.read})}
+  def download file, source
+    File.open(@config[__method__.to_s][file], 'wb') {|f| f.write(open(source) {|f1| f1.read})}
   end
 
-  def self.status
-    config = $ncp[__method__.to_s]
+  def upload file, target
+    File.open(target, 'wb') {|f| f.write(open(@config[__method__.to_s][file]) {|f1| f1.read})}
+  end
+
+  def status
+    config = @config[__method__.to_s]
+    pp config
   end
 end

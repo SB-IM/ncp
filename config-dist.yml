@@ -19,10 +19,12 @@ log_level: "info"
 ncp:
   download:
     map: '../map'
+  upload:
+    log: 'log.log'
   status:
-    - link_id: 2
-    - position_ok: true
-    - lat: "22.0000100001"
-    - lng: "144.0000100001"
-    - alt: "10088.0001"
+    link_id: 2
+    position_ok: true
+    lat: "22.0000100001"
+    lng: "144.0000100001"
+    alt: "10088.0001"
 

@@ -3,7 +3,6 @@ require './lib/ncp'
 require './lib/http'
 require './lib/mqtt'
 require './lib/help'
-require './lib/chain'
 require 'yaml'
 require 'socket'
 require 'logger'
@@ -12,13 +11,11 @@ include Help
 
 config = YAML.load_file('./config.yml')
 
-$ncp = config['ncp']
-#puts config
 
 #log = Logger.new(STDOUT, level: :info)
 log = Logger.new(config['env'] == "development" ? STDOUT : "log/#{config['env']}.log", level: config['log_level'])
 
-$log = log
+ncp = NCP.new config['ncp']
 
 socket = TCPSocket.new config['ctl']['host'], config['ctl']['port']
 sleep 1    # 这里延时连接的确认信息
@@ -28,35 +25,30 @@ sleep 1    # 这里延时连接的确认信息
 
 mqtt = Mqtt.new config['mqtt'], config['id']
 
-ncpc = RestHttp.new config['api_host'], config['id']
-
-@payload = {
-  link_id: ( config["link_id"] || 0 ),
-  gps: {
-    lat: "226876808",
-    lon: "1142248069"
-  }
-}
-
-@status = {}
-
 threads = []
-
-incoming_chain = 'change_json', 'filter_ncp'
 
 threads << Thread.new do
   loop do
     topic, message = mqtt.cloud_get
     log.info "Sub == #{topic} #{message}"
 
-    #puts chain(message, incoming_chain)
-    bool, msg = chain(message, incoming_chain)
-    #p bool
-    #ncpc.finish_mission JSON.parse(msg)['id'] if JSON.parse(msg)['method'] == 'ncp'
-    if bool
-      socket.puts msg
+    msg = change_json(message)
+
+    if JSON.parse(msg)['method'] == 'ncp'
+      begin
+        mqtt.cloud_put JSON.generate({
+          jsonrpc: "2.0",
+          result: ncp.public_send(*JSON.parse(msg)['params']),
+          id: JSON.parse(msg)['id'] })
+
+      rescue Exception => e
+        mqtt.cloud_put JSON.generate({
+          jsonrpc: "2.0",
+          error: e,
+          id: JSON.parse(msg)['id'] })
+      end
     else
-      mqtt.cloud_put msg
+      socket.puts msg
     end
 
   end
