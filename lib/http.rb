@@ -1,45 +1,13 @@
-require 'json'
 require 'rest-client'
+require 'api-auth'
 
 class RestHttp
-  def initialize api_host, id, token='', retry_time=1
-    @id = id
-    @token = token
-
-    @retry_time = retry_time.to_i
-
-    api_ver = "/api/v1"
-    @api_heartbeat = "#{api_ver}/nodes/#{id}/status_lives/0"
-    @api_mission = "#{api_ver}/nodes/#{id}/mission_queues/"
-
-    @server = RestClient::Resource.new(api_host)
+  def initialize id, secret_key=''
+    @id = id.to_s
+    @secret_key = secret_key
   end
 
-  def heartbeat payload=''
-    connect_ncp :patch, @api_heartbeat, payload
+  def request params = {}
+    ApiAuth.sign!(RestClient::Request.new(params), @id, @secret_key).execute.body
   end
-
-  def get_mission
-    connect_ncp :get, @api_mission
-  end
-
-  def finish_mission id
-    connect_ncp :delete, @api_mission + id.to_s
-  end
-
-  private
-    def connect_ncp rest=:get, api=@api_heartbeat, payload=''
-      begin
-        msg = JSON.parse(@server[api].send rest, { payload: payload })
-        #puts msg
-        msg
-      rescue Exception => e
-        puts @api
-        puts "Err: #{e}"
-        sleep @retry_time
-
-        retry
-      end
-    end
-
 end

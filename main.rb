@@ -15,7 +15,7 @@ config = YAML.load_file('./config.yml')
 #log = Logger.new(STDOUT, level: :info)
 log = Logger.new(config['env'] == "development" ? STDOUT : "log/#{config['env']}.log", level: config['log_level'])
 
-ncp = NCP.new config['ncp']
+ncp = NCP.new config['ncp'], config['server']
 
 socket = TCPSocket.new config['ctl']['host'], config['ctl']['port']
 sleep 1    # 这里延时连接的确认信息
@@ -23,7 +23,9 @@ sleep 1    # 这里延时连接的确认信息
 # 冲掉连接确认信息缓冲区
 #puts socket.recvmsg
 
-mqtt = Mqtt.new config['mqtt'], config['id']
+#http = RestHttp.new
+
+mqtt = Mqtt.new config['mqtt'], config['server']['id']
 
 threads = []
 
@@ -42,6 +44,7 @@ threads << Thread.new do
           id: JSON.parse(msg)['id'] })
 
       rescue Exception => e
+        puts e
         mqtt.cloud_put JSON.generate({
           jsonrpc: "2.0",
           error: e,

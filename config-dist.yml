@@ -1,8 +1,10 @@
-api_host: "localhost:3000"
-id: 1
+server:
+  id: 1
+  secret_key: ""
 
 #mqtt: "mqtt[s]://[username][:password]@host.domain[:port]"
 mqtt: "mqtt://admin:public@localhost:1883"
+
 
 ctl:
   host: "localhost"

@@ -12,3 +12,5 @@ gem 'logger'
 
 gem 'rspec'
 
+gem 'api-auth', '~> 2.1.0'
+
