@@ -3,11 +3,11 @@ require 'json'
 
 module Help
   def change_json str
-    JSON.generate({
+    is_json?(str) ? str : JSON.generate({
       jsonrpc: "2.0",
       method: str.split.first,
       params: str.split[1..-1],
-      id: Time.now.to_i.to_s }) unless is_json? str
+      id: Time.now.to_i.to_s })
   end
 
   def is_json? str
