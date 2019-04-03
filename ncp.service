@@ -4,9 +4,13 @@ After=network.target
 Requires=dockctl.service
 
 [Service]
+Type=simple
 User=dockctl
+Restart=on-failure
+RestartSec=5s
 WorkingDirectory=/var/lib/dockctl/ncp
 ExecStart=/bin/sh /var/lib/dockctl/ncp/ncp.sh
 
 [Install]
 WantedBy=multi-user.target
+
