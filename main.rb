@@ -71,9 +71,17 @@ threads << Thread.new do
         mqtt.send_message message
       end
 
-    rescue
-      log.error socket.gets
-      sleep 10
+    rescue Exception => e
+      #log.error socket.gets
+      log.error e.message
+      log.error e.backtrace.inspect
+      begin
+        log.warn "Try Reconnect socket"
+        socket = TCPSocket.new config['ctl']['host'], config['ctl']['port']
+      rescue
+        log.error "Reconnect failed for 10s"
+        sleep 10
+      end
     end
   end
 end
