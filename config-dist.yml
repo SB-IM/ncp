@@ -22,7 +22,8 @@ ncp:
   download:
     map: '../map'
   upload:
-    log: 'log.log'
+    map: '../map'
+    air_log: 'log.log'
   status:
     link_id: 2
     position_ok: true
