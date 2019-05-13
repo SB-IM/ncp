@@ -7,14 +7,17 @@ import (
 	"net/url"
   "strconv"
   "strings"
-	"os"
-	"time"
+  "os"
+  "os/signal"
+  "time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func connect(clientId string, uri *url.URL) mqtt.Client {
+func connect(clientId string, uri *url.URL, willTopic string) mqtt.Client {
 	opts := createClientOptions(clientId, uri)
+  opts.SetWill(willTopic, "2", 2, true)
+
 	client := mqtt.NewClient(opts)
 	token := client.Connect()
 	for !token.WaitTimeout(3 * time.Second) {
@@ -71,7 +74,7 @@ func ncp(input chan string, output chan string) {
   }
 }
 
-func msgCenter(server Server) {
+func msgCenter(s chan os.Signal, server Server) {
 
   Center := log.New(os.Stdout, "[Center] ", log.LstdFlags)
   Default := log.New(os.Stdout, "[Default] ", log.LstdFlags)
@@ -85,10 +88,23 @@ func msgCenter(server Server) {
     log.Fatal(err)
   }
 
-  client := connect("node-" + strconv.Itoa(server.Id), uri)
+  client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
 	go mqttRpcRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
   ch_mqtt := make(chan string, 100)
 	go mqttRpcSend(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt)
+
+  mqttSetOnline(client, "nodes/" + strconv.Itoa(server.Id) + "/status", "online")
+
+  go func(){
+    for sig := range s {
+      // sig is a ^C, handle it
+      fmt.Println("Got signal:", sig)
+      mqttSetOnline(client, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
+      fmt.Println("set offline done")
+      time.Sleep(100000000)
+      client.Disconnect(1)
+    }
+  }()
 
   // Ncp
   ch_ncp := make(chan string, 100)
@@ -176,10 +192,18 @@ func main() {
 	//	topic = "test"
 	//}
 
-  go msgCenter(config.Server)
+  s := make(chan os.Signal)
+  go msgCenter(s, config.Server)
 
-  for {
-    time.Sleep(1000000000)
-  }
+  //for {
+  //  time.Sleep(1000000000)
+  //}
+  c := make(chan os.Signal, 1)
+  signal.Notify(c, os.Interrupt)
+
+  // Block until a signal is received.
+  s <- <-c
+  fmt.Println("Got signal:", s)
+  time.Sleep(1000000000)
 
 }
