@@ -114,6 +114,10 @@ func msgCenter(s chan os.Signal, server Server) {
   ch_socketc := make(chan string, 100)
   go socketClient(server.Tcpc, ch_socketc, input)
 
+  // Socket Server
+  ch_sockets := make(chan string, 100)
+  go socketListen(server.Tcps, ch_sockets, input)
+
   // Router
   for {
     x := <- input
@@ -122,6 +126,7 @@ func msgCenter(s chan os.Signal, server Server) {
     switch {
     case isNcp(x):
       ch_ncp <- x
+      ch_sockets <- x
     case isJSONRPCRecv(x):
       ch_mqtt <- x
     case isJSONRPCSend(x):
@@ -130,6 +135,28 @@ func msgCenter(s chan os.Signal, server Server) {
       Default.Println(x)
     }
   }
+}
+
+func socketListen(addr string, input chan string, output chan string) {
+  ln, err := net.Listen("tcp", addr)
+  if err != nil {
+    // handle error
+    log.Println(err)
+  }
+  for {
+    conn, err := ln.Accept()
+    if err != nil {
+      log.Println(err)
+      // handle error
+    }
+    go sConnection(conn, input, output)
+  }
+
+}
+
+func sConnection(conn net.Conn, input chan string, output chan string) {
+  go socketSend(conn, input)
+  socketRecv(conn, output)
 }
 
 func socketClient(host string, input chan string, output chan string) {
