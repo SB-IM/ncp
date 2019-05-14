@@ -149,12 +149,12 @@ func socketListen(addr string, input chan string, output chan string) {
       log.Println(err)
       // handle error
     }
-    go sConnection(conn, input, output)
+    go socketLink(conn, input, output)
   }
 
 }
 
-func sConnection(conn net.Conn, input chan string, output chan string) {
+func socketLink(conn net.Conn, input chan string, output chan string) {
   go socketSend(conn, input)
   socketRecv(conn, output)
 }
@@ -168,8 +168,7 @@ func socketClient(host string, input chan string, output chan string) {
       time.Sleep(1000000000)
       // handle error
     } else {
-      go socketSend(conn, input)
-      socketRecv(conn, output)
+      socketLink(conn, input, output)
     }
   }
 }
@@ -181,6 +180,7 @@ func socketRecv(conn net.Conn, ch chan string) {
     cnt, err := conn.Read(buf)
     if err != nil || cnt == 0 {
       fmt.Println("EEEEEEEEEEee")
+      conn.Close()
       break
     }
     inStr := strings.TrimSpace(string(buf[0:cnt]))
@@ -204,7 +204,6 @@ func socketSend(conn net.Conn, ch chan string) {
     }
   }
 }
-
 
 func main() {
   config, err := getConfig("./config.yml")
