@@ -36,7 +36,7 @@ func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 	return opts
 }
 
-func mqttRpcRecv(client mqtt.Client, topic string, qos byte, ch chan string) {
+func mqttRecv(client mqtt.Client, topic string, qos byte, ch chan string) {
   logger := log.New(os.Stdout, "[Mqtt recv] ", log.LstdFlags)
 	client.Subscribe(topic, qos, func(client mqtt.Client, msg mqtt.Message) {
 		//fmt.Printf("* [%s] %s\n", msg.Topic(), string(msg.Payload()))
@@ -46,7 +46,7 @@ func mqttRpcRecv(client mqtt.Client, topic string, qos byte, ch chan string) {
 	})
 }
 
-func mqttRpcSend(client mqtt.Client, topic string, qos byte, ch chan string) {
+func mqttSend(client mqtt.Client, topic string, qos byte, ch chan string) {
   logger := log.New(os.Stdout, "[Mqtt Send] ", log.LstdFlags)
   for x := range ch {
     logger.Println(x)
@@ -87,9 +87,11 @@ func msgCenter(s chan os.Signal, server Server) {
   }
 
   client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
-	go mqttRpcRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
+	go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
   ch_mqtt := make(chan string, 100)
-	go mqttRpcSend(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt)
+	go mqttSend(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt)
+  ch_mqtt_message := make(chan string, 100)
+	go mqttSend(client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, ch_mqtt_message)
 
   mqttSetOnline(client, "nodes/" + strconv.Itoa(server.Id) + "/status", "online")
 
@@ -131,6 +133,7 @@ func msgCenter(s chan os.Signal, server Server) {
       ch_socketc <- x
     default:
       Default.Println(x)
+      ch_mqtt_message <- x
     }
   }
 }
