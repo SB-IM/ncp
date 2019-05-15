@@ -9,40 +9,42 @@ import (
   "os"
 )
 
-func socketListen(addr string, input chan string, output chan string) {
+func socketServer(addr string, input chan string, output chan string) {
+  logger := log.New(os.Stdout, "[Socket Server] ", log.LstdFlags)
   ln, err := net.Listen("tcp", addr)
   if err != nil {
-    // handle error
-    log.Println(err)
+    logger.Println(err)
   }
   for {
     conn, err := ln.Accept()
+    logger.Println("New connect")
     if err != nil {
-      log.Println(err)
-      // handle error
+      logger.Println(err)
     }
     go socketLink(conn, input, output)
   }
+}
 
+func socketClient(addr string, input chan string, output chan string) {
+  logger := log.New(os.Stdout, "[Socket Client] ", log.LstdFlags)
+  for {
+    conn, err := net.Dial("tcp", addr)
+    //defer conn.Close()
+    if err != nil {
+      //logger.Println(err)
+      time.Sleep(1000000000)
+      // handle error
+    } else {
+      logger.Println("New connect")
+      socketLink(conn, input, output)
+      logger.Println("Connect err try reconnect")
+    }
+  }
 }
 
 func socketLink(conn net.Conn, input chan string, output chan string) {
   go socketSend(conn, input)
   socketRecv(conn, output)
-}
-
-func socketClient(host string, input chan string, output chan string) {
-  for {
-    conn, err := net.Dial("tcp", host)
-    //defer conn.Close()
-    if err != nil {
-      log.Println(err)
-      time.Sleep(1000000000)
-      // handle error
-    } else {
-      socketLink(conn, input, output)
-    }
-  }
 }
 
 func socketRecv(conn net.Conn, ch chan string) {
@@ -76,5 +78,4 @@ func socketSend(conn net.Conn, ch chan string) {
     }
   }
 }
-
 

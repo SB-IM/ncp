@@ -116,7 +116,7 @@ func msgCenter(s chan os.Signal, server Server) {
 
   // Socket Server
   ch_sockets := make(chan string, 100)
-  go socketListen(server.Tcps, ch_sockets, input)
+  go socketServer(server.Tcps, ch_sockets, input)
 
   // Router
   for {
