@@ -1,5 +1,13 @@
-### About the environment
+# About the environment
 
+#### Compile ncpgo
+go >= 1.12.4
+
+```sh
+go build
+```
+
+#### ruby
 Compile and install ruby （Not rbenv and rvm）
 
 Need ruby 2.5.0 +
@@ -32,6 +40,8 @@ exit
 
 #### Run
 ```sh
-bundler exec ruby main.rb
+ncpgo
+
+bundler exec ruby ncp.rb
 ```
 
