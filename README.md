@@ -1,10 +1,16 @@
-# About the environment
+# Node control protocol
 
 #### Compile ncpgo
 go >= 1.12.4
 
 ```sh
 go build
+```
+
+#### build for arm
+
+```sh
+GOOS=linux GOARCH=arm go build
 ```
 
 #### ruby
