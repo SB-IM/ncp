@@ -26,6 +26,13 @@ func connect(clientId string, uri *url.URL, willTopic string) mqtt.Client {
 	return client
 }
 
+func mqttInit(client mqtt.Client) {
+  logger := log.New(os.Stdout, "[Mqtt] ", log.LstdFlags)
+  logger.Println("connect")
+  clientOptionsReader := client.OptionsReader()
+  mqttSetOnline(client, clientOptionsReader.WillTopic(), "online")
+}
+
 func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", uri.Host))
@@ -34,8 +41,10 @@ func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 	opts.SetPassword(password)
 	opts.SetClientID(clientId)
 
+  // Reconnect callback
+	opts.SetOnConnectHandler(mqttInit)
   // interval 2s
-	opts.SetKeepAlive(2000000000)
+	opts.SetKeepAlive(2 * time.Second)
 	return opts
 }
 
@@ -96,15 +105,13 @@ func msgCenter(s chan os.Signal, server Server) {
   ch_mqtt_message := make(chan string, 100)
 	go mqttSend(client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, ch_mqtt_message)
 
-  mqttSetOnline(client, "nodes/" + strconv.Itoa(server.Id) + "/status", "online")
-
   go func(){
     for sig := range s {
       // sig is a ^C, handle it
       fmt.Println("Got signal:", sig)
       mqttSetOnline(client, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
       fmt.Println("set offline done")
-      time.Sleep(100000000)
+      time.Sleep(10 * time.Millisecond)
       client.Disconnect(1)
     }
   }()
@@ -166,6 +173,6 @@ func main() {
   // Block until a signal is received.
   s <- <-c
   fmt.Println("Got signal:", s)
-  time.Sleep(1000000000)
-
+  time.Sleep(100 * time.Millisecond)
 }
+
