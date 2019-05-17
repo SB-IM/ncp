@@ -33,6 +33,9 @@ func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 	password, _ := uri.User.Password()
 	opts.SetPassword(password)
 	opts.SetClientID(clientId)
+
+  // interval 2s
+	opts.SetKeepAlive(2000000000)
 	return opts
 }
 
