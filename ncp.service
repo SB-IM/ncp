@@ -1,6 +1,10 @@
 [Unit]
 Description=Node control protocol module
 After=network.target
+
+# Ruby gem api-auth need time sync after
+# https://www.freedesktop.org/software/systemd/man/systemd-time-wait-sync.service.html
+After=systemd-time-wait-sync.service
 Requires=dockctl.service
 
 [Service]
