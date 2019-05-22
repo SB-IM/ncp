@@ -6,7 +6,7 @@ include Help
 
 config = YAML.load_file('./config.yml')
 
-mqtt = Mqtt.new config['mqtt'], config['server']['id']
+mqtt = Mqtt.new config['server']['mqtt'], config['server']['id']
 
 threads = []
 
