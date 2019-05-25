@@ -13,6 +13,7 @@ User=dockctl
 Restart=on-failure
 RestartSec=5s
 WorkingDirectory=/var/lib/dockctl/ncp
+ExecStartPre=/bin/bash /var/lib/dockctl/ncp/wait_time_sync.sh
 ExecStart=/bin/sh /var/lib/dockctl/ncp/ncp.sh
 
 [Install]
