@@ -8,21 +8,21 @@ rspec:
   script:
     - bundler exec rspec
 
-deploy:
-  before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-
-  stage: deploy
-  script: tar -cJf - ./ | ssh -v sb@api.sb.im 'mkdir -p ncp && cd ncp && tar -xJf -'
-  only:
-    refs:
-      - master
+      #deploy:
+      #  before_script:
+      #    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+      #    - eval $(ssh-agent -s)
+      #    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+      #    - mkdir -p ~/.ssh
+      #    - chmod 700 ~/.ssh
+      #    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      #    - chmod 644 ~/.ssh/known_hosts
+      #
+      #  stage: deploy
+      #  script: tar -cJf - ./ | ssh -v sb@api.sb.im 'mkdir -p ncp && cd ncp && tar -xJf -'
+      #  only:
+      #    refs:
+      #      - master
 
 deploy_simulation:
   before_script:
