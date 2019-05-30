@@ -44,6 +44,14 @@ gem install bundler
 exit
 ```
 
+#### Install
+```sh
+bundle install
+cp config-dist.yml config.yml
+vim config.yml
+```
+
+
 #### Run
 ```sh
 ncpgo
