@@ -12,6 +12,19 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+type DuplicateFilter struct {
+  msg string
+}
+
+func (d *DuplicateFilter) Put(m string) (string) {
+  if d.msg == m {
+    return ""
+  } else {
+    d.msg = m
+    return m
+  }
+}
+
 func connect(clientId string, uri *url.URL, willTopic string) mqtt.Client {
 	opts := createClientOptions(clientId, uri)
   opts.SetWill(willTopic, "2", 2, true)
@@ -50,11 +63,14 @@ func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 
 func mqttRecv(client mqtt.Client, topic string, qos byte, ch chan string) {
   logger := log.New(os.Stdout, "[Mqtt recv] ", log.LstdFlags)
+  rpc_filter := DuplicateFilter{}
 	client.Subscribe(topic, qos, func(client mqtt.Client, msg mqtt.Message) {
 		//fmt.Printf("* [%s] %s\n", msg.Topic(), string(msg.Payload()))
     m := string(msg.Payload())
     logger.Println(m)
-    ch <- m
+    if rpc_filter.Put(m) != "" {
+      ch <- m
+    }
 	})
 }
 
