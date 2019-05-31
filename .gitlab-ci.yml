@@ -39,7 +39,7 @@ deploy:
 
   stage: deploy
   script:
-    - apt-get update -y && apt-get install -y golang
+    - apt-get update -y && apt-get install -y xz-utils
     - go version
     - GOOS=linux GOARCH=arm go build
     - tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'mkdir -p ncp && cd ncp && tar -xJf -'
