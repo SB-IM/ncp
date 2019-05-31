@@ -19,7 +19,7 @@ deploy:
     - chmod 644 ~/.ssh/known_hosts
 
   stage: deploy
-  script: tar -cJf - ./ | ssh -v sb@api.sb.im 'mkdir -p ncp && cd ncp && tar -xJf -'
+  script: tar -cJf - ./ | ssh sb@api.sb.im 'mkdir -p ncp && cd ncp && tar -xJf -'
   only:
     refs:
       - master
@@ -36,6 +36,7 @@ deploy:
 
   stage: deploy
   script:
+    - apt-get update -y && apt-get install -y golang
     - go version
     - GOOS=linux GOARCH=arm go build
     - tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'mkdir -p ncp && cd ncp && tar -xJf -'
