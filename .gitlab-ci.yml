@@ -35,7 +35,10 @@ deploy:
     - chmod 644 ~/.ssh/known_hosts
 
   stage: deploy
-  script: tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'mkdir -p ncp && cd ncp && tar -xJf -'
+  script:
+    - go version
+    - GOOS=linux GOARCH=arm go build
+    - tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'mkdir -p ncp && cd ncp && tar -xJf -'
   only:
     refs:
       - dev
