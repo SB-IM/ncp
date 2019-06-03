@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
   "strconv"
+  "strings"
   "os"
   "os/signal"
   "time"
@@ -25,11 +26,17 @@ func (d *DuplicateFilter) Put(m string) (string) {
   }
 }
 
-func connect(clientId string, uri *url.URL, willTopic string) mqtt.Client {
+func connect(clientId string, uri *url.URL, willTopic string, ch chan string) mqtt.Client {
 	opts := createClientOptions(clientId, uri)
   opts.SetWill(willTopic, "2", 2, true)
+  fmt.Println(opts.ResumeSubs)
 
-	client := mqtt.NewClient(opts)
+
+  m := nnn{ ch_rpc_recv: ch }
+  // Reconnect callback
+	opts.SetOnConnectHandler(m.mqttInit)
+
+  client := mqtt.NewClient(opts)
 	token := client.Connect()
 	for !token.WaitTimeout(3 * time.Second) {
 	}
@@ -39,12 +46,24 @@ func connect(clientId string, uri *url.URL, willTopic string) mqtt.Client {
 	return client
 }
 
-func mqttInit(client mqtt.Client) {
+type nnn struct {
+  ch_rpc_recv chan string
+}
+
+
+func (this *nnn) mqttInit(client mqtt.Client) {
   logger := log.New(os.Stdout, "[Mqtt] ", log.LstdFlags)
   logger.Println("connect")
   clientOptionsReader := client.OptionsReader()
   mqttSetOnline(client, clientOptionsReader.WillTopic(), "online")
+  fmt.Println(strings.Split(clientOptionsReader.WillTopic(), "/")[1])
+	//go mqttRecv(client, "nodes/" + strings.Split(clientOptionsReader.WillTopic(), "/")[1] + "/rpc/send", 2, input)
+	go mqttRecv(client, "nodes/" + strings.Split(clientOptionsReader.WillTopic(), "/")[1] + "/rpc/send", 2, this.ch_rpc_recv)
 }
+
+//func onLost(client mqtt.Client, err error) {
+//    fmt.Println("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
+//}
 
 func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
@@ -54,8 +73,14 @@ func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 	opts.SetPassword(password)
 	opts.SetClientID(clientId)
 
-  // Reconnect callback
-	opts.SetOnConnectHandler(mqttInit)
+  // Last callback
+  //opts.OnConnectionLost(onLost)
+  //opts.SetConnectionLostHandler(onLost)
+  opts.SetConnectionLostHandler(func(client mqtt.Client, err error) {
+    fmt.Println("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
+  })
+  opts.SetResumeSubs(true)
+
   // interval 2s
 	opts.SetKeepAlive(2 * time.Second)
 	return opts
@@ -114,8 +139,8 @@ func msgCenter(s chan os.Signal, server Server) {
     log.Fatal(err)
   }
 
-  client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
-	go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
+  client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status", input)
+	//go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
   ch_mqtt := make(chan string, 100)
 	go mqttSend(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt)
   ch_mqtt_message := make(chan string, 100)
