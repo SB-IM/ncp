@@ -13,19 +13,6 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type DuplicateFilter struct {
-  msg string
-}
-
-func (d *DuplicateFilter) Put(m string) (string) {
-  if d.msg == m {
-    return ""
-  } else {
-    d.msg = m
-    return m
-  }
-}
-
 func connect(clientId string, uri *url.URL, willTopic string, ch chan string) mqtt.Client {
 	opts := createClientOptions(clientId, uri)
   opts.SetWill(willTopic, "2", 2, true)
