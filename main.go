@@ -126,7 +126,13 @@ func msgCenter(s chan os.Signal, server Server) {
 }
 
 func main() {
-  config, err := getConfig("./config.yml")
+  config_path := "./config.yml"
+  if os.Getenv("NCP_CONF") != "" {
+    config_path = os.Getenv("NCP_CONF")
+  }
+  fmt.Println("load config: " + config_path)
+
+  config, err := getConfig(config_path)
   if err != nil {
     log.Fatalf("error: %v", err)
   }
