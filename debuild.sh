@@ -1,12 +1,14 @@
 
 pkgname=ncp
 pkgver=0.1.0
-#arch=arm
-arch=amd64
+arch=arm
+#arch=amd64
 
 srcdir=${pkgname}_${pkgver}_linux_${arch}
 
 GOOS=linux GOARCH=${arch} go build
+
+arch=armhf
 
 mkdir -p debian
 
@@ -53,7 +55,7 @@ ncp.service lib/systemd/system/
 EOF
 
 cat > debian/changelog << EOF
-${pkgname} (${pkgver}-1) unstable; urgency=low
+${pkgname} (${pkgver}-0) unstable; urgency=low
 
   * Initial release.
 

@@ -1,20 +1,12 @@
 image: golang:1.12.5-stretch
 
-
-#before_script:
-#  - ruby -v
-#  - which ruby
-#  - gem install bundler --no-document
-#  - bundle install --jobs $(nproc)  "${FLAGS[@]}"
-
 test:
   script:
     - go version
     - go build
-    - go test
     - go test -cover -v
 
-deploy:
+packaging:
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - eval $(ssh-agent -s)
@@ -25,7 +17,9 @@ deploy:
     - chmod 644 ~/.ssh/known_hosts
 
   stage: deploy
-  script: tar -cJf - ./ | ssh sb@api.sb.im 'mkdir -p ncp && cd ncp && tar -xJf -'
+  script:
+    - apt-get update -y && apt-get install -y xz-utils
+    - tar -cJf - ./ | ssh build@api.sb.im -p 6001 'cd `bin/pre_build.sh ncp` && tar -xJf - && ~/bin/build.sh'
   only:
     refs:
       - master
