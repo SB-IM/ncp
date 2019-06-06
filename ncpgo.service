@@ -1,0 +1,15 @@
+[Unit]
+Description=Go Node control protocol module
+After=network.target
+
+[Service]
+Type=simple
+Environment=NCP_CONF=/etc/ncp/ncp.yml
+User=nobody
+Restart=on-failure
+RestartSec=5s
+ExecStart=/usr/bin/ncpgo
+
+[Install]
+WantedBy=multi-user.target
+

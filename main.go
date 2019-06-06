@@ -1,77 +1,28 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/url"
+  "fmt"
+  "log"
+  "net/url"
   "strconv"
   "os"
   "os/signal"
   "time"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+  mqtt "github.com/eclipse/paho.mqtt.golang"
 )
-
-type DuplicateFilter struct {
-  msg string
-}
-
-func (d *DuplicateFilter) Put(m string) (string) {
-  if d.msg == m {
-    return ""
-  } else {
-    d.msg = m
-    return m
-  }
-}
-
-func connect(clientId string, uri *url.URL, willTopic string) mqtt.Client {
-	opts := createClientOptions(clientId, uri)
-  opts.SetWill(willTopic, "2", 2, true)
-
-	client := mqtt.NewClient(opts)
-	token := client.Connect()
-	for !token.WaitTimeout(3 * time.Second) {
-	}
-	if err := token.Error(); err != nil {
-		log.Fatal(err)
-	}
-	return client
-}
-
-func mqttInit(client mqtt.Client) {
-  logger := log.New(os.Stdout, "[Mqtt] ", log.LstdFlags)
-  logger.Println("connect")
-  clientOptionsReader := client.OptionsReader()
-  mqttSetOnline(client, clientOptionsReader.WillTopic(), "online")
-}
-
-func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s", uri.Host))
-	opts.SetUsername(uri.User.Username())
-	password, _ := uri.User.Password()
-	opts.SetPassword(password)
-	opts.SetClientID(clientId)
-
-  // Reconnect callback
-	opts.SetOnConnectHandler(mqttInit)
-  // interval 2s
-	opts.SetKeepAlive(2 * time.Second)
-	return opts
-}
 
 func mqttRecv(client mqtt.Client, topic string, qos byte, ch chan string) {
   logger := log.New(os.Stdout, "[Mqtt recv] ", log.LstdFlags)
   rpc_filter := DuplicateFilter{}
-	client.Subscribe(topic, qos, func(client mqtt.Client, msg mqtt.Message) {
-		//fmt.Printf("* [%s] %s\n", msg.Topic(), string(msg.Payload()))
+  client.Subscribe(topic, qos, func(client mqtt.Client, msg mqtt.Message) {
+    //fmt.Printf("* [%s] %s\n", msg.Topic(), string(msg.Payload()))
     m := string(msg.Payload())
     logger.Println(m)
     if rpc_filter.Put(m) != "" {
       ch <- m
     }
-	})
+  })
 }
 
 func mqttSend(client mqtt.Client, topic string, qos byte, ch chan string) {
@@ -108,27 +59,37 @@ func msgCenter(s chan os.Signal, server Server) {
   input := make(chan string)
 
   // Mqtt
-	//uri, err := url.Parse(os.Getenv("MQTT_URL"))
+  //uri, err := url.Parse(os.Getenv("MQTT_URL"))
   uri, err := url.Parse(server.Mqtt)
   if err != nil {
     log.Fatal(err)
   }
 
-  client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
-	go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
+  //logger_mqtt := log.New(os.Stdout, "[Mqtt] ", log.LstdFlags)
+
   ch_mqtt := make(chan string, 100)
-	go mqttSend(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt)
+
+  mqtt := mqttProxy{
+    id: strconv.Itoa(server.Id),
+    ch_rpc_send: ch_mqtt,
+    ch_rpc_recv: input,
+  }
+
+  //client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status", input)
+  mqtt.Connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
+  //go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
+  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt)
   ch_mqtt_message := make(chan string, 100)
-	go mqttSend(client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, ch_mqtt_message)
+  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, ch_mqtt_message)
 
   go func(){
     for sig := range s {
       // sig is a ^C, handle it
       fmt.Println("Got signal:", sig)
-      mqttSetOnline(client, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
+      mqttSetOnline(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
       fmt.Println("set offline done")
       time.Sleep(10 * time.Millisecond)
-      client.Disconnect(1)
+      mqtt.client.Disconnect(1)
     }
   }()
 
@@ -165,17 +126,23 @@ func msgCenter(s chan os.Signal, server Server) {
 }
 
 func main() {
-  config, err := getConfig("./config.yml")
+  config_path := "./config.yml"
+  if os.Getenv("NCP_CONF") != "" {
+    config_path = os.Getenv("NCP_CONF")
+  }
+  fmt.Println("load config: " + config_path)
+
+  config, err := getConfig(config_path)
   if err != nil {
     log.Fatalf("error: %v", err)
   }
 
   fmt.Println("=========")
   //topic := "test"
-	//topic := uri.Path[1:len(uri.Path)]
-	//if topic == "" {
-	//	topic = "test"
-	//}
+  //topic := uri.Path[1:len(uri.Path)]
+  //if topic == "" {
+  //	topic = "test"
+  //}
 
   s := make(chan os.Signal)
   go msgCenter(s, config.Server)
