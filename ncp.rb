@@ -8,8 +8,7 @@ require 'logger'
 
 include Help
 
-config = YAML.load_file('./config.yml')
-
+config = YAML.load_file(ENV['NCP_CONF'] || './config.yml')
 
 #log = Logger.new(STDOUT, level: :info)
 log = Logger.new(config['env'] == "development" ? STDOUT : "log/#{config['env']}.log", level: config['log_level'])

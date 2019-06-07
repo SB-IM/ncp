@@ -8,6 +8,9 @@ srcdir=${pkgname}_${pkgver}_linux_${arch}
 
 GOOS=linux GOARCH=${arch} go build
 
+
+bundler install --path=vendor
+
 arch=armhf
 
 mkdir -p debian
@@ -34,7 +37,7 @@ Description: Go Node control protocol
 Package: ncpcmd
 Priority: extra
 Architecture: ${arch}
-Depends: ncpgo
+Depends: ncpgo, ruby, ruby-bundler
 Description: Node control protocol
 EOF
 
@@ -50,6 +53,8 @@ Gemfile* usr/lib/ncp/
 lib usr/lib/ncp/
 scripts usr/lib/ncp/
 log usr/lib/ncp/
+vendor usr/lib/ncp/vendor
+.bundle usr/lib/ncp/
 
 ncp.service lib/systemd/system/
 EOF

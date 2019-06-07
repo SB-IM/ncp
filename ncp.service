@@ -5,16 +5,18 @@ After=network.target
 # Ruby gem api-auth need time sync after
 # https://www.freedesktop.org/software/systemd/man/systemd-time-wait-sync.service.html
 After=systemd-time-wait-sync.service
-Requires=dockctl.service
+#Requires=dockctl.service
+Requires=ncpgo.service
 
 [Service]
 Type=simple
-User=dockctl
+#User=dockctl
+Environment=NCP_CONF=/etc/ncp/config.yml
 Restart=on-failure
 RestartSec=5s
-WorkingDirectory=/var/lib/dockctl/ncp
-ExecStartPre=/bin/bash /var/lib/dockctl/ncp/wait_time_sync.sh
-ExecStart=/bin/sh /var/lib/dockctl/ncp/ncp.sh
+WorkingDirectory=/usr/lib/ncp/
+ExecStartPre=/bin/bash /usr/lib/ncp/wait_time_sync.sh
+ExecStart=/bin/sh /usr/lib/ncp/ncp.sh
 
 [Install]
 WantedBy=multi-user.target
