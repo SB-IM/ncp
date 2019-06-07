@@ -1,6 +1,6 @@
 
 pkgname=ncp
-pkgver=0.1.1
+pkgver=0.1.2
 arch=arm
 #arch=amd64
 
@@ -55,6 +55,7 @@ scripts usr/lib/ncp/
 log usr/lib/ncp/
 vendor usr/lib/ncp/
 .bundle usr/lib/ncp/
+wait_time_sync.sh usr/lib/ncp/
 
 ncp.service lib/systemd/system/
 EOF
