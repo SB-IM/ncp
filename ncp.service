@@ -16,7 +16,7 @@ Restart=on-failure
 RestartSec=5s
 WorkingDirectory=/usr/lib/ncp/
 ExecStartPre=/bin/bash /usr/lib/ncp/wait_time_sync.sh
-ExecStart=/bin/sh /usr/lib/ncp/ncp.sh
+ExecStart=/usr/bin/bundler exec ruby ncp.rb
 
 [Install]
 WantedBy=multi-user.target

@@ -53,7 +53,7 @@ Gemfile* usr/lib/ncp/
 lib usr/lib/ncp/
 scripts usr/lib/ncp/
 log usr/lib/ncp/
-vendor usr/lib/ncp/vendor
+vendor usr/lib/ncp/
 .bundle usr/lib/ncp/
 
 ncp.service lib/systemd/system/
