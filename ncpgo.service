@@ -9,6 +9,7 @@ User=nobody
 Restart=on-failure
 RestartSec=5s
 ExecStart=/usr/bin/ncpgo
+KillSignal=SIGINT
 
 [Install]
 WantedBy=multi-user.target
