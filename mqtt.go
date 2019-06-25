@@ -26,7 +26,7 @@ type mqttProxy struct {
   ch_rpc_recv chan string
 }
 
-func (this *mqttProxy) Connect(clientId string, uri *url.URL, willTopic string) mqtt.Client {
+func (this *mqttProxy) Connect(status Status, clientId string, uri *url.URL, willTopic string) mqtt.Client {
   opts := setUri(uri)
   opts.SetWill(willTopic, "2", 2, true)
   logger := log.New(os.Stdout, "[Mqtt] ", log.LstdFlags)
@@ -46,7 +46,7 @@ func (this *mqttProxy) Connect(clientId string, uri *url.URL, willTopic string) 
   opts.SetOnConnectHandler(func (client mqtt.Client) {
     logger.Println("New Connect")
     clientOptionsReader := client.OptionsReader()
-    mqttSetOnline(client, clientOptionsReader.WillTopic(), "online")
+    mqttSetOnline(client, status, clientOptionsReader.WillTopic(), "online")
     go mqttRecv(client, "nodes/" + this.id + "/rpc/send", 2, this.ch_rpc_recv)
   })
 

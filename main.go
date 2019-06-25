@@ -5,6 +5,7 @@ import (
   "log"
   "net/url"
   "strconv"
+  "encoding/json"
   "os"
   "os/signal"
   "time"
@@ -33,14 +34,29 @@ func mqttSend(client mqtt.Client, topic string, qos byte, ch chan string) {
   }
 }
 
-func mqttSetOnline(client mqtt.Client, topic string, status string) {
-  statusMap := map[string]string {
-    "online": "0",
-    "offline": "1",
-    "neterror": "2",
+type OnStatus struct {
+  Code int `json:"code"`
+  Msg string `json:"msg"`
+  Timestamp string `json:"timestamp"`
+  Status Status `json:"status"`
+}
+
+func mqttSetOnline(client mqtt.Client, status Status, topic string, s string) {
+  statusMap := map[string]int {
+    "online": 0,
+    "offline": 1,
+    "neterror": 2,
   }
 
-  client.Publish(topic, 2, true, statusMap[status])
+  onstatus := &OnStatus{
+    Code : statusMap[s],
+    Msg : s,
+    Timestamp : strconv.FormatInt(time.Now().Unix(), 10),
+    Status : status,
+  }
+
+  r, _ := json.Marshal(onstatus)
+  client.Publish(topic, 2, true, string(r))
 }
 
 func ncp(input chan string, output chan string) {
@@ -51,7 +67,7 @@ func ncp(input chan string, output chan string) {
   }
 }
 
-func msgCenter(s chan os.Signal, server Server) {
+func msgCenter(s chan os.Signal, server Server, n Ncp) {
 
   Center := log.New(os.Stdout, "[Center] ", log.LstdFlags)
   Default := log.New(os.Stdout, "[Default] ", log.LstdFlags)
@@ -76,7 +92,7 @@ func msgCenter(s chan os.Signal, server Server) {
   }
 
   //client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status", input)
-  mqtt.Connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
+  mqtt.Connect(n.Status, "node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
   //go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
   go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt)
   ch_mqtt_message := make(chan string, 100)
@@ -86,7 +102,7 @@ func msgCenter(s chan os.Signal, server Server) {
     for sig := range s {
       // sig is a ^C, handle it
       fmt.Println("Got signal:", sig)
-      mqttSetOnline(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
+      mqttSetOnline(mqtt.client, n.Status, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
       fmt.Println("set offline done")
       time.Sleep(10 * time.Millisecond)
       mqtt.client.Disconnect(1)
@@ -145,7 +161,7 @@ func main() {
   //}
 
   s := make(chan os.Signal)
-  go msgCenter(s, config.Server)
+  go msgCenter(s, config.Server, config.Ncp)
 
   //for {
   //  time.Sleep(1000000000)

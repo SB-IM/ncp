@@ -22,18 +22,20 @@ type Ncp struct {
     Map string
     Air_log string
   }
-  Status struct {
-    Link_id int
-    Position_ok bool
-    Lat string
-    Lng string
-    Alt string
-  }
+  Status
   Shell struct {
     Path string
     Prefix string
     Suffix string
   }
+}
+
+type Status struct {
+  Link_id int `json:"link_id"`
+  Position_ok bool `json:"position_ok"`
+  Lat string `json:"lat"`
+  Lng string `json:"lng"`
+  Alt string `json:"alt"`
 }
 
 type Config struct {
