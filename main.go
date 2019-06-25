@@ -8,6 +8,7 @@ import (
   "os"
   "os/signal"
   "time"
+  "strings"
 
   mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -43,15 +44,16 @@ func mqttSetOnline(client mqtt.Client, topic string, status string) {
   client.Publish(topic, 2, true, statusMap[status])
 }
 
-func ncp(input chan string, output chan string) {
+func ncp(ncp Ncp, input chan string, output chan string) {
   logger := log.New(os.Stdout, "[Ncp cmd] ", log.LstdFlags)
   for cmd := range input {
     logger.Println(cmd)
+    output <- ncpCmd(ncp, cmd)
     //output <- cmd
   }
 }
 
-func msgCenter(s chan os.Signal, server Server) {
+func msgCenter(s chan os.Signal, server Server, n Ncp) {
 
   Center := log.New(os.Stdout, "[Center] ", log.LstdFlags)
   Default := log.New(os.Stdout, "[Default] ", log.LstdFlags)
@@ -95,7 +97,7 @@ func msgCenter(s chan os.Signal, server Server) {
 
   // Ncp
   ch_ncp := make(chan string, 100)
-  go ncp(ch_ncp, input)
+  go ncp(n, ch_ncp, input)
 
   // Socket Client
   ch_socketc := make(chan string, 100)
@@ -125,6 +127,17 @@ func msgCenter(s chan os.Signal, server Server) {
   }
 }
 
+func ncpCmd(ncp Ncp, method string) string {
+  tmp := CallObjectMethod(new(Ncp), "Method_" + method)
+  //fmt.Println(tmp)
+  str := fmt.Sprintf("%v", tmp)
+  fmt.Println("++++++++++++=")
+  //fmt.Printf(strings.TrimSuffix(strings.TrimPrefix(str, "["), "]"))
+  return strings.TrimSuffix(strings.TrimPrefix(str, "["), "]")
+  //fmt.Println(tmp)
+
+}
+
 func main() {
   config_path := "./config.yml"
   if os.Getenv("NCP_CONF") != "" {
@@ -138,6 +151,18 @@ func main() {
   }
 
   fmt.Println("=========")
+
+  //go ncpCmd(config.Ncp, "status")
+  //fmt.Println(config.Ncp.Method_status())
+
+
+
+  //fmt.Println(CallObjectMethod(&Ncp{}, "Method_status"))
+  //fmt.Println(CallObjectMethod(new(Ncp), "Method_status"))
+  //aa := CallObjectMethod(&(config.Ncp), "Method_upload", "map", "http")
+  //fmt.Println(aa)
+
+
   //topic := "test"
   //topic := uri.Path[1:len(uri.Path)]
   //if topic == "" {
@@ -145,7 +170,7 @@ func main() {
   //}
 
   s := make(chan os.Signal)
-  go msgCenter(s, config.Server)
+  go msgCenter(s, config.Server, config.Ncp)
 
   //for {
   //  time.Sleep(1000000000)

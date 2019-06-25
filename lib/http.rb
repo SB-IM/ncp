@@ -8,6 +8,9 @@ class RestHttp
   end
 
   def request params = {}
-    ApiAuth.sign!(RestClient::Request.new(params), @id, @secret_key).execute.body
+    #ApiAuth.sign!(RestClient::Request.new(params), @id, @secret_key).execute.body
+    tt = ApiAuth.sign!(RestClient::Request.new(params), @id, @secret_key)
+    pp tt.headers
+    tt.execute.body
   end
 end
