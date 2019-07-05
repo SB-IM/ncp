@@ -6,6 +6,7 @@ server:
   #mqtt: "mqtt://admin:public@mqtt.sblab.xyz:1883"
   tcpc: "localhost:8980"
   tcps: "localhost:1208"
+  tran: "localhost:1122"
 
 # production, development
 #env: "production"

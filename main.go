@@ -121,6 +121,9 @@ func msgCenter(s chan os.Signal, server Server, n Ncp) {
   ch_sockets := make(chan string, 100)
   go socketServer(server.Tcps, ch_sockets, input)
 
+  // Socket tran
+  go socketServerTran(server.Tran, mqtt.client, "nodes/" + strconv.Itoa(server.Id))
+
   // Router
   for {
     x := <- input

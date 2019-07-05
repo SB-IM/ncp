@@ -12,6 +12,7 @@ type Server struct {
     Mqtt string
     Tcpc string
     Tcps string
+    Tran string
 }
 
 type Ncp struct {
