@@ -28,7 +28,7 @@ type mqttProxy struct {
 
 func (this *mqttProxy) Connect(status Status, clientId string, uri *url.URL, willTopic string) mqtt.Client {
   opts := setUri(uri)
-  opts.SetWill(willTopic, "2", 2, true)
+  opts.SetWill(willTopic, `{"code":2,"msg":"neterror"}`, 2, true)
   logger := log.New(os.Stdout, "[Mqtt] ", log.LstdFlags)
 
   opts.SetClientID(clientId)
