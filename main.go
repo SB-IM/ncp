@@ -138,9 +138,7 @@ func msgCenter(s chan os.Signal, server Server, n Ncp) {
       //fmt.Println("Recvice", x)
     }
 
-    if x == "" {
-      break
-    }
+    if x == "" { continue }
 
     //Center.Println(x)
 
