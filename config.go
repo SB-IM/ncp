@@ -2,6 +2,7 @@ package main
 
 import (
   "io/ioutil"
+  "fmt"
 
   yaml "gopkg.in/yaml.v2"
 )
@@ -15,12 +16,10 @@ type Server struct {
 }
 
 type Ncp struct {
-  Download struct {
-    Map string
-  }
-  Upload struct {
-    Map string
-    Air_log string
+  Download map[string]string
+  Upload map[string]string
+  Live struct {
+    Args string
   }
   Status struct {
     Link_id int
@@ -33,6 +32,14 @@ type Ncp struct {
     Path string
     Prefix string
     Suffix string
+  }
+}
+
+func (this *Ncp) Upload2 () {
+  fmt.Println((*this).Upload["map"])
+  fmt.Println((*this).Upload["map2"])
+  if (*this).Upload["map2"] == "" {
+    fmt.Println("EEEEEEEEEEEEE")
   }
 }
 
