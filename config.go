@@ -3,6 +3,7 @@ package main
 import (
   "io/ioutil"
   "fmt"
+  "errors"
 
   yaml "gopkg.in/yaml.v2"
 )
@@ -16,6 +17,10 @@ type Server struct {
 }
 
 type Ncp struct {
+  Common struct {
+    Id string
+    SecretKey string
+  }
   Download map[string]string
   Upload map[string]string
   Live struct {
@@ -35,11 +40,25 @@ type Ncp struct {
   }
 }
 
-func (this *Ncp) Upload2 () {
-  fmt.Println((*this).Upload["map"])
-  fmt.Println((*this).Upload["map2"])
-  if (*this).Upload["map2"] == "" {
+type NcpCmd struct {
+  config Ncp
+}
+
+func (this *NcpCmd) Download (filename, source string) error {
+  if (*this).config.Download[filename] == "" {
     fmt.Println("EEEEEEEEEEEEE")
+    return errors.New("No " + filename + " config found")
+  } else {
+    return httpDownload((*this).config.Common.Id, (*this).config.Common.SecretKey, (*this).config.Download[filename], source)
+  }
+}
+
+func (this *NcpCmd) Upload (filename, target string) error {
+  if (*this).config.Upload[filename] == "" {
+    fmt.Println("EEEEEEEEEEEEE")
+    return errors.New("No " + filename + " config found")
+  } else {
+    return httpUpload((*this).config.Common.Id, (*this).config.Common.SecretKey, filename, (*this).config.Upload[filename], target)
   }
 }
 

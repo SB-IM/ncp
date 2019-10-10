@@ -151,6 +151,20 @@ func main() {
   }
 
   fmt.Println("=========")
+  //fmt.Println(config)
+
+  config.Ncp.Common.Id = strconv.Itoa(config.Server.Id)
+  config.Ncp.Common.SecretKey = config.Server.Secret_key
+  ncpCmd := NcpCmd {
+    config: config.Ncp,
+  }
+	fmt.Println(ncpCmd)
+  //err = ncpCmd.Download("map", "http://localhost:3000/ncp/v1/plans/12/get_map")
+  //err = ncpCmd.Upload("map", "http://localhost:3000/ncp/v1/plans/14/plan_logs/41")
+  //err = ncpCmd.Upload("air_log", "http://localhost:3000/ncp/v1/plans/14/plan_logs/41")
+  //if err != nil {
+  //  fmt.Println(err)
+  //}
 
   //go ncpCmd(config.Ncp, "status")
   //fmt.Println(config.Ncp.Method_status())
