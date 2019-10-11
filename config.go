@@ -14,6 +14,7 @@ type Server struct {
     Mqtt string
     Tcpc string
     Tcps string
+    Tran string
 }
 
 type Ncp struct {
@@ -26,13 +27,7 @@ type Ncp struct {
   Live struct {
     Args string
   }
-  Status struct {
-    Link_id int
-    Position_ok bool
-    Lat string
-    Lng string
-    Alt string
-  }
+  Status
   Shell struct {
     Path string
     Prefix string
@@ -60,6 +55,14 @@ func (this *NcpCmd) Upload (filename, target string) error {
   } else {
     return httpUpload((*this).config.Common.Id, (*this).config.Common.SecretKey, filename, (*this).config.Upload[filename], target)
   }
+}
+
+type Status struct {
+  Link_id int `json:"link_id"`
+  Position_ok bool `json:"position_ok"`
+  Lat string `json:"lat"`
+  Lng string `json:"lng"`
+  Alt string `json:"alt"`
 }
 
 type Config struct {

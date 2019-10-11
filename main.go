@@ -5,6 +5,7 @@ import (
   "log"
   "net/url"
   "strconv"
+  "encoding/json"
   "os"
   "os/signal"
   "time"
@@ -15,14 +16,10 @@ import (
 
 func mqttRecv(client mqtt.Client, topic string, qos byte, ch chan string) {
   logger := log.New(os.Stdout, "[Mqtt recv] ", log.LstdFlags)
-  rpc_filter := DuplicateFilter{}
   client.Subscribe(topic, qos, func(client mqtt.Client, msg mqtt.Message) {
-    //fmt.Printf("* [%s] %s\n", msg.Topic(), string(msg.Payload()))
     m := string(msg.Payload())
     logger.Println(m)
-    if rpc_filter.Put(m) != "" {
       ch <- m
-    }
   })
 }
 
@@ -34,14 +31,29 @@ func mqttSend(client mqtt.Client, topic string, qos byte, ch chan string) {
   }
 }
 
-func mqttSetOnline(client mqtt.Client, topic string, status string) {
-  statusMap := map[string]string {
-    "online": "0",
-    "offline": "1",
-    "neterror": "2",
+type OnStatus struct {
+  Code int `json:"code"`
+  Msg string `json:"msg"`
+  Timestamp string `json:"timestamp"`
+  Status Status `json:"status"`
+}
+
+func mqttSetOnline(client mqtt.Client, status Status, topic string, s string) {
+  statusMap := map[string]int {
+    "online": 0,
+    "offline": 1,
+    "neterror": 2,
   }
 
-  client.Publish(topic, 2, true, statusMap[status])
+  onstatus := &OnStatus{
+    Code : statusMap[s],
+    Msg : s,
+    Timestamp : strconv.FormatInt(time.Now().Unix(), 10),
+    Status : status,
+  }
+
+  r, _ := json.Marshal(onstatus)
+  client.Publish(topic, 2, true, string(r))
 }
 
 func ncp(ncp Ncp, input chan string, output chan string) {
@@ -55,7 +67,7 @@ func ncp(ncp Ncp, input chan string, output chan string) {
 
 func msgCenter(s chan os.Signal, server Server, n Ncp) {
 
-  Center := log.New(os.Stdout, "[Center] ", log.LstdFlags)
+  //Center := log.New(os.Stdout, "[Center] ", log.LstdFlags)
   Default := log.New(os.Stdout, "[Default] ", log.LstdFlags)
 
   input := make(chan string)
@@ -69,18 +81,19 @@ func msgCenter(s chan os.Signal, server Server, n Ncp) {
 
   //logger_mqtt := log.New(os.Stdout, "[Mqtt] ", log.LstdFlags)
 
-  ch_mqtt := make(chan string, 100)
+  ch_mqtt_i := make(chan string, 100)
+  ch_mqtt_o := make(chan string, 100)
 
   mqtt := mqttProxy{
     id: strconv.Itoa(server.Id),
-    ch_rpc_send: ch_mqtt,
-    ch_rpc_recv: input,
+    ch_rpc_send: ch_mqtt_o,
+    ch_rpc_recv: ch_mqtt_i,
   }
 
   //client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status", input)
-  mqtt.Connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
+  mqtt.Connect(n.Status, "node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
   //go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
-  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt)
+  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt_o)
   ch_mqtt_message := make(chan string, 100)
   go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, ch_mqtt_message)
 
@@ -88,7 +101,7 @@ func msgCenter(s chan os.Signal, server Server, n Ncp) {
     for sig := range s {
       // sig is a ^C, handle it
       fmt.Println("Got signal:", sig)
-      mqttSetOnline(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
+      mqttSetOnline(mqtt.client, n.Status, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
       fmt.Println("set offline done")
       time.Sleep(10 * time.Millisecond)
       mqtt.client.Disconnect(1)
@@ -107,17 +120,36 @@ func msgCenter(s chan os.Signal, server Server, n Ncp) {
   ch_sockets := make(chan string, 100)
   go socketServer(server.Tcps, ch_sockets, input)
 
+  // Socket tran
+  go socketServerTran(server.Tran, mqtt.client, "nodes/" + strconv.Itoa(server.Id))
+
   // Router
+  var x string
+  rpc_filter := DuplicateFilter{}
+  Filter := log.New(os.Stdout, "[Filter] ", log.LstdFlags)
+
   for {
-    x := <- input
-    Center.Println(x)
+    select {
+    case x = <- ch_mqtt_i:
+      //fmt.Println("Recvice Mqtt", x)
+      if x = rpc_filter.Put(x); x == "" {
+        Filter.Println(rpc_filter.Msg)
+      }
+
+    case x = <- input:
+      //fmt.Println("Recvice", x)
+    }
+
+    if x == "" { continue }
+
+    //Center.Println(x)
 
     switch {
     case isNcp(x):
       ch_ncp <- x
       ch_sockets <- x
     case isJSONRPCRecv(x):
-      ch_mqtt <- x
+      ch_mqtt_o <- x
     case isJSONRPCSend(x):
       ch_socketc <- x
     default:

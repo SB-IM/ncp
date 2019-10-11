@@ -1,6 +1,6 @@
 
 pkgname=ncp
-pkgver=0.1.2
+pkgver=0.2.1
 arch=arm
 #arch=amd64
 

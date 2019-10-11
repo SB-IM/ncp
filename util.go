@@ -1,14 +1,14 @@
 package main
 
 type DuplicateFilter struct {
-  msg string
+  Msg string
 }
 
 func (last *DuplicateFilter) Put(m string) (string) {
-  if last.msg == m {
+  if last.Msg == m {
     return ""
   } else {
-    last.msg = m
+    last.Msg = m
     return m
   }
 }
