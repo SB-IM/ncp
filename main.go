@@ -194,13 +194,11 @@ func main() {
   //err = ncpCmd.Download("map", "http://localhost:3000/ncp/v1/plans/12/get_map")
   //err = ncpCmd.Upload("map", "http://localhost:3000/ncp/v1/plans/14/plan_logs/41")
   //err = ncpCmd.Upload("air_log", "http://localhost:3000/ncp/v1/plans/14/plan_logs/41")
+  //fmt.Println(ncpCmd.Status())
+  //fmt.Println(ncpCmd.Shell("test"))
   //if err != nil {
   //  fmt.Println(err)
   //}
-
-  //go ncpCmd(config.Ncp, "status")
-  //fmt.Println(config.Ncp.Method_status())
-
 
 
   //fmt.Println(CallObjectMethod(&Ncp{}, "Method_status"))

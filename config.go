@@ -2,8 +2,6 @@ package main
 
 import (
   "io/ioutil"
-  "fmt"
-  "errors"
 
   yaml "gopkg.in/yaml.v2"
 )
@@ -35,28 +33,6 @@ type Ncp struct {
   }
 }
 
-type NcpCmd struct {
-  config Ncp
-}
-
-func (this *NcpCmd) Download (filename, source string) error {
-  if (*this).config.Download[filename] == "" {
-    fmt.Println("EEEEEEEEEEEEE")
-    return errors.New("No " + filename + " config found")
-  } else {
-    return httpDownload((*this).config.Common.Id, (*this).config.Common.SecretKey, (*this).config.Download[filename], source)
-  }
-}
-
-func (this *NcpCmd) Upload (filename, target string) error {
-  if (*this).config.Upload[filename] == "" {
-    fmt.Println("EEEEEEEEEEEEE")
-    return errors.New("No " + filename + " config found")
-  } else {
-    return httpUpload((*this).config.Common.Id, (*this).config.Common.SecretKey, filename, (*this).config.Upload[filename], target)
-  }
-}
-
 type Status struct {
   Link_id int `json:"link_id"`
   Position_ok bool `json:"position_ok"`
@@ -71,7 +47,6 @@ type Config struct {
   Log_level string
   Ncp
 }
-
 
 func getConfig(str string) (Config, error) {
   config := Config{}

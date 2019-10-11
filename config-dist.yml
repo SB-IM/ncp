@@ -29,7 +29,7 @@ ncp:
     alt: "10088.0001"
 #  shell:
 #    path: "scripts/"
-#    prefix: "sh "
+#    prefix: "sh"
 #    suffix: ".sh"
 
 
