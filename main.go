@@ -9,7 +9,8 @@ import (
   "os"
   "os/signal"
   "time"
-  "strings"
+  //"strings"
+  "reflect"
 
   mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -56,7 +57,7 @@ func mqttSetOnline(client mqtt.Client, status Status, topic string, s string) {
   client.Publish(topic, 2, true, string(r))
 }
 
-func ncp(ncp Ncp, input chan string, output chan string) {
+func ncp(ncp *NcpCmd, input chan string, output chan string) {
   logger := log.New(os.Stdout, "[Ncp cmd] ", log.LstdFlags)
   for cmd := range input {
     logger.Println(cmd)
@@ -65,7 +66,7 @@ func ncp(ncp Ncp, input chan string, output chan string) {
   }
 }
 
-func msgCenter(s chan os.Signal, server Server, n Ncp) {
+func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 
   //Center := log.New(os.Stdout, "[Center] ", log.LstdFlags)
   Default := log.New(os.Stdout, "[Default] ", log.LstdFlags)
@@ -110,7 +111,7 @@ func msgCenter(s chan os.Signal, server Server, n Ncp) {
 
   // Ncp
   ch_ncp := make(chan string, 100)
-  go ncp(n, ch_ncp, input)
+  go ncp(ncpCmd, ch_ncp, input)
 
   // Socket Client
   ch_socketc := make(chan string, 100)
@@ -159,15 +160,34 @@ func msgCenter(s chan os.Signal, server Server, n Ncp) {
   }
 }
 
-func ncpCmd(ncp Ncp, method string) string {
-  tmp := CallObjectMethod(new(Ncp), "Method_" + method)
-  //fmt.Println(tmp)
-  str := fmt.Sprintf("%v", tmp)
-  fmt.Println("++++++++++++=")
-  //fmt.Printf(strings.TrimSuffix(strings.TrimPrefix(str, "["), "]"))
-  return strings.TrimSuffix(strings.TrimPrefix(str, "["), "]")
-  //fmt.Println(tmp)
+func ncpCmd(ncp *NcpCmd, raw string) string {
+	rpc := getJSONRPC(raw)
 
+	// rpc.Method == "ncp"
+  //results := CallObjectMethod(ncp, Ucfirst(rpc.Method))
+  results := CallObjectMethod(ncp, Ucfirst("status"))
+
+	//tmp := CallObjectMethod(new(Ncp), "Method_" + method)
+  //fmt.Printf(strings.TrimSuffix(strings.TrimPrefix(str, "["), "]"))
+
+	//results := CallObjectMethod(ncp, Ucfirst("download"), "map", "http://localhost:3000/ncp/v1/plans/12/get_map")
+	result := results.([]reflect.Value)[0].Interface().([]byte)
+
+	var s string
+	if string(result) == "" {
+		s =`"result":""`
+	} else {
+		s =`"result":` + string(result)
+	}
+
+
+	fmt.Println(string(result))
+	if e := results.([]reflect.Value)[1].Interface(); e != nil {
+		fmt.Println(e.(error))
+		s = `"error": "EEEEEEEEEEEEE"`
+	}
+
+	return `{"jsonrpc":"2.0",`+s+`,"id":"` + rpc.Id + `"}`
 }
 
 func main() {
@@ -190,32 +210,31 @@ func main() {
   ncpCmd := NcpCmd {
     config: config.Ncp,
   }
+
+	// init, Golang has no constructor
+  ncpCmd.Init()
+
 	fmt.Println(ncpCmd)
   //err = ncpCmd.Download("map", "http://localhost:3000/ncp/v1/plans/12/get_map")
   //err = ncpCmd.Upload("map", "http://localhost:3000/ncp/v1/plans/14/plan_logs/41")
   //err = ncpCmd.Upload("air_log", "http://localhost:3000/ncp/v1/plans/14/plan_logs/41")
   //fmt.Println(ncpCmd.Status())
-  ncpCmd.Init()
   //fmt.Println(ncpCmd.Shell("test"))
-  //if err != nil {
-  //  fmt.Println(err)
-  //}
+  //CallObjectMethod(&ncpCmd, Ucfirst("download"), "map", "http://localhost:3000/ncp/v1/plans/12/get_map")
 
+	//results := CallObjectMethod(&ncpCmd, Ucfirst("download"), "map", "http://localhost:3000/ncp/v1/plans/12/get_map")
 
-  //fmt.Println(CallObjectMethod(&Ncp{}, "Method_status"))
-  //fmt.Println(CallObjectMethod(new(Ncp), "Method_status"))
-  //aa := CallObjectMethod(&(config.Ncp), "Method_upload", "map", "http")
-  //fmt.Println(aa)
+	//results := CallObjectMethod(&ncpCmd, Ucfirst("status"))
+	//result := results.([]reflect.Value)[0].Interface().([]byte)
 
+	//fmt.Println(string(result))
+	//if e := results.([]reflect.Value)[1].Interface(); e != nil {
+	//	fmt.Println(e.(error))
+	//}
 
-  //topic := "test"
-  //topic := uri.Path[1:len(uri.Path)]
-  //if topic == "" {
-  //	topic = "test"
-  //}
 
   s := make(chan os.Signal)
-  go msgCenter(s, config.Server, config.Ncp)
+  go msgCenter(s, config.Server, &ncpCmd, config.Ncp)
 
   //for {
   //  time.Sleep(1000000000)

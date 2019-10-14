@@ -33,36 +33,35 @@ func (this *NcpCmd) Init() (*NcpCmd, error) {
 	return this, nil
 }
 
-func (this *NcpCmd) Download(filename, source string) error {
+func (this *NcpCmd) Download(filename, source string) ([]byte, error) {
 	if (*this).config.Download[filename] == "" {
-		return errors.New("No " + filename + " config found")
+		return []byte(""), errors.New("No " + filename + " config found")
 	} else {
-		return httpDownload((*this).config.Common.Id, (*this).config.Common.SecretKey, (*this).config.Download[filename], source)
+		return []byte(""), httpDownload((*this).config.Common.Id, (*this).config.Common.SecretKey, (*this).config.Download[filename], source)
 	}
 }
 
-func (this *NcpCmd) Upload(filename, target string) error {
+func (this *NcpCmd) Upload(filename, target string) ([]byte, error) {
 	if (*this).config.Upload[filename] == "" {
-		return errors.New("No " + filename + " config found")
+		return []byte(""), errors.New("No " + filename + " config found")
 	} else {
-		return httpUpload((*this).config.Common.Id, (*this).config.Common.SecretKey, filename, (*this).config.Upload[filename], target)
+		return []byte(""), httpUpload((*this).config.Common.Id, (*this).config.Common.SecretKey, filename, (*this).config.Upload[filename], target)
 	}
 }
 
-func (this *NcpCmd) Status() string {
-	r, _ := json.Marshal((*this).config.Status)
-	return string(r)
+func (this *NcpCmd) Status() ([]byte, error) {
+	return json.Marshal((*this).config.Status)
 }
 
-func (this *NcpCmd) Shell(command string) error {
+func (this *NcpCmd) Shell(command string) ([]byte, error) {
 	c := (*this).config.Shell
 	if c.Path == "" {
-		return errors.New("Disable shell call")
+		return []byte(""), errors.New("Disable shell call")
 	}
 
 	_, err := exec.Command(c.Prefix, c.Path+command+c.Suffix).CombinedOutput()
 	if err != nil {
-		return err
+		return []byte(""), err
 	}
-	return nil
+	return []byte(""), nil
 }
