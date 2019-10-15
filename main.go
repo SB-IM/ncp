@@ -9,6 +9,7 @@ import (
   "os"
   "os/signal"
   "time"
+	"regexp"
   //"strings"
   "reflect"
 
@@ -162,15 +163,41 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 
 func ncpCmd(ncp *NcpCmd, raw string) string {
 	rpc := getJSONRPC(raw)
+  results := CallObjectMethod(ncp, Ucfirst("status"))
 
 	// rpc.Method == "ncp"
+	//fmt.Println(string(*rpc.Params))
+	if regexp.MustCompile(`^\{.*\}$`).MatchString(string(*rpc.Params)) {
+		fmt.Println("{}")
+
+	} else {
+		fmt.Println(string(*rpc.Params))
+
+		var params []string
+		json.Unmarshal(*rpc.Params, &params)
+
+		switch params[0] {
+		case "status":
+			results = CallObjectMethod(ncp, Ucfirst("status"))
+		case "upload":
+			results = CallObjectMethod(ncp, Ucfirst("upload"), params[1], params[2])
+		case "download":
+			//results := CallObjectMethod(ncp, Ucfirst("download"), "map", "http://localhost:3000/ncp/v1/plans/12/get_map")
+			results = CallObjectMethod(ncp, Ucfirst("download"), params[1], params[2])
+		case "shell":
+			results = CallObjectMethod(ncp, Ucfirst("shell"), params[1])
+		default:
+			results = CallObjectMethod(ncp, Ucfirst("status"))
+		}
+
+	}
+
+
   //results := CallObjectMethod(ncp, Ucfirst(rpc.Method))
-  results := CallObjectMethod(ncp, Ucfirst("status"))
 
 	//tmp := CallObjectMethod(new(Ncp), "Method_" + method)
   //fmt.Printf(strings.TrimSuffix(strings.TrimPrefix(str, "["), "]"))
 
-	//results := CallObjectMethod(ncp, Ucfirst("download"), "map", "http://localhost:3000/ncp/v1/plans/12/get_map")
 	result := results.([]reflect.Value)[0].Interface().([]byte)
 
 	var s string

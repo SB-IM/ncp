@@ -12,6 +12,7 @@ func isJSON(s string) bool {
 type JSONRPC struct {
   Jsonrpc string
   Method string
+	Params     *json.RawMessage `json:"params,omitempty"`
   Result interface{}
   Error interface{}
   Id string
