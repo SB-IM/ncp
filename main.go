@@ -169,6 +169,7 @@ func ncpCmd(ncp *NcpCmd, raw string) string {
 	//fmt.Println(string(*rpc.Params))
 	if regexp.MustCompile(`^\{.*\}$`).MatchString(string(*rpc.Params)) {
 		fmt.Println("{}")
+		results = CallObjectMethod(ncp, Ucfirst("webrtc"), *rpc.Params)
 
 	} else {
 		fmt.Println(string(*rpc.Params))

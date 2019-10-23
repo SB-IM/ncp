@@ -22,7 +22,12 @@ type Ncp struct {
   }
   Download map[string]string
   Upload map[string]string
-  Live struct {
+  Webrtc struct {
+		//Iceserver []struct {
+		//	urls string
+		//	credential string
+		//	username string
+		//}
     Args string
   }
   Status

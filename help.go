@@ -33,5 +33,5 @@ func isJSONRPCRecv(s string) bool {
 }
 
 func isNcp(s string) bool {
-  return isJSONRPCSend(s) && getJSONRPC(s).Method == "ncp"
+  return isJSONRPCSend(s) && (getJSONRPC(s).Method == "ncp" || getJSONRPC(s).Method == "webrtc")
 }

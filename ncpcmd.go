@@ -6,10 +6,15 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"regexp"
+
+	"light"
+
+	"github.com/pion/webrtc/v2"
 )
 
 type NcpCmd struct {
 	config Ncp
+	webrtc light.Star
 }
 
 func (this *NcpCmd) Init() (*NcpCmd, error) {
@@ -64,4 +69,15 @@ func (this *NcpCmd) Shell(command string) ([]byte, error) {
 		return []byte(""), err
 	}
 	return []byte(""), nil
+}
+
+func (this *NcpCmd) Webrtc(raw []byte) ([]byte, error) {
+	iceServers := []webrtc.ICEServer{
+		{
+			//URLs: []string{"stun:stun.l.google.com:19302"},
+			URLs: []string{"stun:api.sb.im"},
+		},
+	}
+
+	return *(this.webrtc.Light(&iceServers, (*this).config.Webrtc.Args, &raw)), nil
 }
