@@ -1,10 +1,30 @@
-image: golang:1.12.5-stretch
+image: golang:1.13.1-buster
 
 test:
   script:
     - go version
     - go build
     - go test -cover -v
+  only:
+    refs:
+      - master
+      - dev
+
+test_noruby:
+  before_script:
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/sbim/superdock/links/starlight.git".insteadOf git@gitlab.com:sbim/superdock/links/starlight.git
+    - git submodule sync && git submodule update --init
+#  variables:
+#    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - apt-get update -y && apt-get install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good
+    - go version
+    - make dep
+    - make build
+    - make test
+  only:
+    refs:
+      - noruby
 
 packaging:
   before_script:
