@@ -165,13 +165,10 @@ func ncpCmd(ncp *NcpCmd, raw string) string {
 	rpc := getJSONRPC(raw)
   results := CallObjectMethod(ncp, Ucfirst("status"))
 
-	// rpc.Method == "ncp"
-	//fmt.Println(string(*rpc.Params))
 	if regexp.MustCompile(`^\{.*\}$`).MatchString(string(*rpc.Params)) {
-		fmt.Println("{}")
 		results = CallObjectMethod(ncp, Ucfirst("webrtc"), *rpc.Params)
 
-	} else {
+	} else if rpc.Method == "ncp" {
 		fmt.Println(string(*rpc.Params))
 
 		var params []string
@@ -190,7 +187,21 @@ func ncpCmd(ncp *NcpCmd, raw string) string {
 		default:
 			results = CallObjectMethod(ncp, Ucfirst("status"))
 		}
-
+	} else {
+		var params []string
+		json.Unmarshal(*rpc.Params, &params)
+		switch rpc.Method {
+		case "status":
+			results = CallObjectMethod(ncp, Ucfirst("status"))
+		case "upload":
+			results = CallObjectMethod(ncp, Ucfirst("upload"), params[0], params[1])
+		case "download":
+			results = CallObjectMethod(ncp, Ucfirst("download"), params[0], params[1])
+		case "shell":
+			results = CallObjectMethod(ncp, Ucfirst("shell"), params[0])
+		default:
+			results = CallObjectMethod(ncp, Ucfirst("status"))
+		}
 	}
 
 
