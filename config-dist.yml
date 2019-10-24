@@ -17,8 +17,19 @@ log_level: "info"
 
 ncp:
   webrtc:
+    iceserver:
+    - urls:
+      - "stun:api.sb.im"
+#      - "stun:stun.l.google.com:19302"
+#    - urls:
+#      - "turn:turnserver.example.org"
+#      username: "webrtc"
+#      credential: "turnpassword"
+#      credentialType: 0
+    # test video src
+    args: "gst://videotestsrc ! videoconvert ! queue"
     # gst-launch-1.0 videotestsrc ! 'video/x-raw, width=640, height=480' ! videoconvert ! x264enc ! rtph264pay ! udpsink host=127.0.0.1 port=5004
-    args: 'udpsrc port=5004 caps="application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264" ! rtph264depay ! avdec_h264 ! videoconvert ! queue'
+    #args: 'udpsrc port=5004 caps="application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264" ! rtph264depay ! avdec_h264 ! videoconvert ! queue'
   download:
     map: '../map'
   upload:

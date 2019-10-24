@@ -3,6 +3,7 @@ package main
 import (
   "io/ioutil"
 
+	"github.com/pion/webrtc/v2"
   yaml "gopkg.in/yaml.v2"
 )
 
@@ -23,11 +24,7 @@ type Ncp struct {
   Download map[string]string
   Upload map[string]string
   Webrtc struct {
-		//Iceserver []struct {
-		//	urls string
-		//	credential string
-		//	username string
-		//}
+		Iceserver []webrtc.ICEServer
     Args string
   }
   Status

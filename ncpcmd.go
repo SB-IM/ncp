@@ -8,8 +8,6 @@ import (
 	"regexp"
 
 	"light"
-
-	"github.com/pion/webrtc/v2"
 )
 
 type NcpCmd struct {
@@ -72,12 +70,5 @@ func (this *NcpCmd) Shell(command string) ([]byte, error) {
 }
 
 func (this *NcpCmd) Webrtc(raw []byte) ([]byte, error) {
-	iceServers := []webrtc.ICEServer{
-		{
-			//URLs: []string{"stun:stun.l.google.com:19302"},
-			URLs: []string{"stun:api.sb.im"},
-		},
-	}
-
-	return *(this.webrtc.Light(&iceServers, (*this).config.Webrtc.Args, &raw)), nil
+	return *(this.webrtc.Light(&(*this).config.Webrtc.Iceserver, (*this).config.Webrtc.Args, &raw)), nil
 }
