@@ -25,6 +25,7 @@ type Ncp struct {
   Upload map[string]string
   Webrtc struct {
 		Iceserver []webrtc.ICEServer
+		Driver string
     Args string
   }
   Status
