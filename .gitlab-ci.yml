@@ -8,7 +8,6 @@ test:
   only:
     refs:
       - master
-      - dev
 
 test_noruby:
   before_script:
@@ -25,6 +24,7 @@ test_noruby:
   only:
     refs:
       - noruby
+      - dev
 
 packaging:
   before_script:
@@ -56,10 +56,11 @@ deploy_simulation:
 
   stage: deploy
   script:
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/sbim/superdock/links/starlight.git".insteadOf git@gitlab.com:sbim/superdock/links/starlight.git
+    - git submodule sync && git submodule update --init
+    - make dep
     - apt-get update -y && apt-get install -y xz-utils
-    - go version
-    - GOOS=linux GOARCH=arm go build
-    - tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'mkdir -p ncp && cd ncp && tar -xJf -'
+    - tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'rm -rf ncp && mkdir -p ncp && cd ncp && tar -xJf - && PATH="$HOME/go/bin:$PATH" make build && ../ncp_restart.sh'
   only:
     refs:
       - dev
