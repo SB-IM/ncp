@@ -1,22 +1,18 @@
 [Unit]
 Description=Node control protocol module
 After=network.target
-
-# Ruby gem api-auth need time sync after
+# http api-auth need time sync after
 # https://www.freedesktop.org/software/systemd/man/systemd-time-wait-sync.service.html
 After=systemd-time-wait-sync.service
-#Requires=dockctl.service
-Requires=ncpgo.service
 
 [Service]
 Type=simple
-#User=dockctl
 Environment=NCP_CONF=/etc/ncp/config.yml
+User=nobody
 Restart=on-failure
 RestartSec=5s
-WorkingDirectory=/usr/lib/ncp/
-ExecStartPre=/bin/bash /usr/lib/ncp/wait_time_sync.sh
-ExecStart=/usr/bin/bundler exec ruby ncp.rb
+ExecStart=/usr/bin/ncpgo
+KillSignal=SIGINT
 
 [Install]
 WantedBy=multi-user.target

@@ -1,61 +1,21 @@
 # Node control protocol
 
+#### Depend
+- libgstreamer1.0-dev
+- libgstreamer-plugins-base1.0-dev
+- gstreamer1.0-plugins-good
+
+For debian
+```sh
+apt-get install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good
+```
+
 #### Compile ncpgo
 go >= 1.12.4
 
 ```sh
-go build
-```
-
-#### build for arm
-
-```sh
-GOOS=linux GOARCH=arm go build
-```
-
-#### ruby
-Compile and install ruby （Not rbenv and rvm）
-
-Need ruby 2.5.0 +
-
-Suggest ruby 2.6.0 +
-
-```sh
-wget https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.1.tar.xz
-
-# SHA256: 47b629808e9fd44ce1f760cdf3ed14875fc9b19d4f334e82e2cf25cb2898f2f2
-
-./configure --prefix=$HOME/.ruby
-
-make
-
-# Not sudo
-make install
-
-echo 'export PATH="$HOME/.ruby/bin:$PATH"' >> $HOME/.bashrc
-```
-
-ruby 2.6.x Default bundler 1.17.x
-
-If Need bundler 2.0.x
-```sh
-gem install bundler
-
-exit
-```
-
-#### Install
-```sh
-bundle install
-cp config-dist.yml config.yml
-vim config.yml
-```
-
-
-#### Run
-```sh
-ncpgo
-
-bundler exec ruby ncp.rb
+git submodule update --init --recursive
+make dep
+make build
 ```
 
