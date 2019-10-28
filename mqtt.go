@@ -36,6 +36,7 @@ func (this *mqttProxy) Connect(status Status, clientId string, uri *url.URL, wil
   // interval 2s
   opts.SetKeepAlive(2 * time.Second)
   opts.SetResumeSubs(true)
+	opts.SetMaxReconnectInterval(3 * time.Minute)
 
   // Lost callback
   opts.SetConnectionLostHandler(func(client mqtt.Client, err error) {
