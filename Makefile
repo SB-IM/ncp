@@ -23,3 +23,6 @@ run:
 test:
 	go test -mod=vendor -cover
 
+clean:
+	go clean -mod=vendor
+
