@@ -69,3 +69,24 @@ func Test_isNcp(t *testing.T) {
   }
 }
 
+func Test_isLink(t *testing.T) {
+	linkcall := `{"jsonrpc":"2.0","id":"sdwc.1-155332103904","method":"link","params":["power_on_drone"]}`
+
+  if !isLink(linkcall) {
+    t.Errorf("Not Link")
+  }
+
+	if isLink(test_jsonrpc_send) {
+    t.Errorf("Is Link")
+  }
+}
+
+func Test_linkCall(t *testing.T) {
+	linkcall := `{"jsonrpc":"2.0","id":"sdwc.1-155332103904","method":"link","params":["power_on_drone"]}`
+  //t.Errorf(linkCall(linkcall, 2))
+
+  if getJSONRPC(linkCall(linkcall, 2)).Method != "power_on_drone" {
+    t.Errorf("Not Link")
+  }
+}
+

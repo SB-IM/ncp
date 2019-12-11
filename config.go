@@ -9,6 +9,7 @@ import (
 
 type Server struct {
     Id int
+    Link_id int
     Secret_key string
     Mqtt string
     Tcpc string

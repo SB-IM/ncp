@@ -2,6 +2,8 @@ package main
 
 import (
   "encoding/json"
+	"strconv"
+	"time"
 )
 
 func isJSON(s string) bool {
@@ -41,3 +43,21 @@ func isNcp(s string) bool {
 	}
   return isJSONRPCSend(s) && isncp
 }
+
+func isLink(s string) bool {
+	if getJSONRPC(s).Method == "link" {
+		return true
+	} else {
+		return false
+	}
+}
+
+func linkCall(raw string, caller int) string {
+	rpc := getJSONRPC(raw)
+	var params []string
+	json.Unmarshal(*rpc.Params, &params)
+
+	bit13_timestamp := string([]byte(strconv.FormatInt(time.Now().UnixNano(), 10))[:13])
+	return `{"jsonrpc":"2.0","id":"ncp.` + strconv.Itoa(caller) + `-` + bit13_timestamp + `","method":"` + params[0] + `","params":[]}`
+}
+

@@ -25,11 +25,11 @@ func mqttRecv(client mqtt.Client, topic string, qos byte, ch chan string) {
   })
 }
 
-func mqttSend(client mqtt.Client, topic string, qos byte, ch chan string) {
+func mqttSend(client mqtt.Client, topic string, qos byte, retained bool, ch chan string) {
   logger := log.New(os.Stdout, "[Mqtt Send] ", log.LstdFlags)
   for x := range ch {
     logger.Println(x)
-    client.Publish(topic, qos, true, x)
+    client.Publish(topic, qos, retained, x)
   }
 }
 
@@ -72,7 +72,7 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
   //Center := log.New(os.Stdout, "[Center] ", log.LstdFlags)
   Default := log.New(os.Stdout, "[Default] ", log.LstdFlags)
 
-  input := make(chan string)
+  input := make(chan string, 100)
 
   // Mqtt
   //uri, err := url.Parse(os.Getenv("MQTT_URL"))
@@ -95,9 +95,13 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
   //client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status", input)
   mqtt.Connect(n.Status, "node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
   //go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
-  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, ch_mqtt_o)
-  ch_mqtt_message := make(chan string, 100)
-  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, ch_mqtt_message)
+  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, true, ch_mqtt_o)
+
+	ch_mqtt_link_i := make(chan string, 100)
+  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Link_id) + "/rpc/send", 2, false, ch_mqtt_link_i)
+
+	ch_mqtt_message := make(chan string, 100)
+  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, true, ch_mqtt_message)
 
   go func(){
     for sig := range s {
@@ -115,8 +119,9 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
   go ncp(ncpCmd, ch_ncp, input)
 
   // Socket Client
+  ch_socketc_i := make(chan string, 100)
   ch_socketc := make(chan string, 100)
-  go socketClient(server.Tcpc, ch_socketc, input)
+  go socketClient(server.Tcpc, ch_socketc, ch_socketc_i)
 
   // Socket Server
   ch_sockets := make(chan string, 100)
@@ -136,6 +141,13 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
       //fmt.Println("Recvice Mqtt", x)
       if x = rpc_filter.Put(x); x == "" {
         Filter.Println(rpc_filter.Msg)
+      }
+    case x = <- ch_socketc_i:
+      if isLink(x) {
+				x = linkCall(x, server.Id)
+				ch_mqtt_link_i <- x
+				fmt.Println("[Link Call] " + x)
+				x = ""
       }
 
     case x = <- input:
@@ -246,6 +258,8 @@ func main() {
 
   config.Ncp.Common.Id = strconv.Itoa(config.Server.Id)
   config.Ncp.Common.SecretKey = config.Server.Secret_key
+
+  config.Server.Link_id = config.Ncp.Status.Link_id
   ncpCmd := NcpCmd {
     config: config.Ncp,
   }
