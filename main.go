@@ -97,9 +97,6 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
   //go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
   go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, true, ch_mqtt_o)
 
-	ch_mqtt_link_i := make(chan string, 100)
-  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Link_id) + "/rpc/send", 2, false, ch_mqtt_link_i)
-
 	ch_mqtt_message := make(chan string, 100)
   go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, true, ch_mqtt_message)
 
@@ -144,8 +141,10 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
       }
     case x = <- ch_socketc_i:
       if isLink(x) {
-				x = linkCall(x, server.Id)
-				ch_mqtt_link_i <- x
+				xx := linkCall(x, server.Id)
+				go func() {
+					ch_socketc <-syncMqttRpc(mqtt.client, server.Link_id, xx)
+				}()
 				fmt.Println("[Link Call] " + x)
 				x = ""
       }

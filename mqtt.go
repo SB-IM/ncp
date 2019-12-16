@@ -4,6 +4,7 @@ import (
   "os"
   "log"
   "time"
+  "strconv"
   "net/url"
 
   mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -60,5 +61,23 @@ func (this *mqttProxy) Connect(status Status, clientId string, uri *url.URL, wil
   }
   this.client = client
   return client
+}
+
+func syncMqttRpc(client mqtt.Client, id int, send string) string {
+	logger := log.New(os.Stdout, "[Mqtt Rpc] ", log.LstdFlags)
+	invoking := getJSONRPC(send).Id
+	topic := "nodes/" + strconv.Itoa(id) + "/rpc/"
+	ch_recv := make(chan string)
+	client.Subscribe(topic + "recv", 1, func(client mqtt.Client, mqtt_msg mqtt.Message) {
+		msg := string(mqtt_msg.Payload())
+		if invoking == getJSONRPC(msg).Id {
+			client.Unsubscribe(topic + "recv")
+			logger.Println("Res: " + msg)
+			ch_recv <-msg
+		}
+	})
+	client.Publish(topic + "send", 2, false, send)
+	logger.Println("Req: " + send)
+	return <-ch_recv
 }
 
