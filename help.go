@@ -34,6 +34,10 @@ func isJSONRPCRecv(s string) bool {
   return getJSONRPC(s).Result != nil || getJSONRPC(s).Error != nil
 }
 
+func confirmNotice(s string) string {
+	return `{"jsonrpc": "2.0", "method": "ack", "params": { "id": "` + getJSONRPC(s).Id + `" }}`
+}
+
 func isNcp(s string) bool {
 	method := getJSONRPC(s).Method
 	isncp := false

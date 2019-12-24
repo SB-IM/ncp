@@ -2,6 +2,7 @@ package main
 
 import (
   "testing"
+	"encoding/json"
 )
 
 var test_jsonrpc_send = `{"jsonrpc":"2.0","id":"sdwc.1-1553321035000","method":"dooropen","params":[]}`
@@ -88,5 +89,22 @@ func Test_linkCall(t *testing.T) {
   if getJSONRPC(linkCall(linkcall, 2)).Method != "power_on_drone" {
     t.Errorf("Not Link")
   }
+}
+
+func Test_confirmNotice(t *testing.T) {
+	id := "test.0-155332103904"
+	linkcall := `{"jsonrpc":"2.0","id":"` + id + `","method":"link","params":["power_on_drone"]}`
+	if rpc := getJSONRPC(confirmNotice(linkcall)); rpc.Method != "ack" {
+		t.Errorf("Not Method: 'ack'")
+	} else {
+		var params struct {
+			Id string `json:"id"`
+		}
+		json.Unmarshal(*rpc.Params, &params)
+
+		if params.Id != id {
+			t.Errorf(params.Id)
+		}
+	}
 }
 

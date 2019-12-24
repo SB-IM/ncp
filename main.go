@@ -138,7 +138,9 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
       //fmt.Println("Recvice Mqtt", x)
       if x = rpc_filter.Put(x); x == "" {
         Filter.Println(rpc_filter.Msg)
-      }
+			} else {
+				ch_mqtt_o <- confirmNotice(x)
+			}
     case x = <- ch_socketc_i:
       if isLink(x) {
 				xx := linkCall(x, server.Id)
