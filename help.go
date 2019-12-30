@@ -34,6 +34,30 @@ func isJSONRPCRecv(s string) bool {
   return getJSONRPC(s).Result != nil || getJSONRPC(s).Error != nil
 }
 
+type RpcRun struct {
+	run []string
+}
+
+func (this *RpcRun) Run(s string) bool {
+	id := getJSONRPC(s).Id
+	if func(str string, array []string) bool {
+		for _, r := range array {
+			if r == id {
+				return true
+			}
+		}
+		return false
+	}(id, this.run) {
+		return false
+	} else {
+		if len(this.run) >= 128 {
+			this.run = this.run[1:]
+		}
+		this.run = append(this.run, id)
+		return true
+	}
+}
+
 func confirmNotice(s string) string {
 	return `{"jsonrpc": "2.0", "method": "ack", "params": { "id": "` + getJSONRPC(s).Id + `" }}`
 }

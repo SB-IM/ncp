@@ -127,19 +127,18 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
   // Socket tran
   go socketServerTran(server.Tran, mqtt.client, "nodes/" + strconv.Itoa(server.Id))
 
-  // Router
-  var x string
-  rpc_filter := DuplicateFilter{}
-  Filter := log.New(os.Stdout, "[Filter] ", log.LstdFlags)
+	// Router
+	var x string
+	rpc_run := RpcRun{}
+	Filter := log.New(os.Stdout, "[Filter] ", log.LstdFlags)
 
   for {
     select {
     case x = <- ch_mqtt_i:
-      //fmt.Println("Recvice Mqtt", x)
-      if x = rpc_filter.Put(x); x == "" {
-        Filter.Println(rpc_filter.Msg)
-			} else {
+			if rpc_run.Run(x) {
 				ch_mqtt_o <- confirmNotice(x)
+			} else {
+				Filter.Println(x)
 			}
     case x = <- ch_socketc_i:
       if isLink(x) {

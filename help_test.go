@@ -2,6 +2,7 @@ package main
 
 import (
   "testing"
+	"strconv"
 	"encoding/json"
 )
 
@@ -57,6 +58,42 @@ func Test_isJSONRPCRecv(t *testing.T) {
   if isJSONRPCRecv("aaaaa") {
     t.Errorf("Not JSON")
   }
+}
+
+func Test_RpcRun(t *testing.T) {
+  m := RpcRun{}
+  m.Run(test_jsonrpc_send)
+
+  if m.Run(test_jsonrpc_send) {
+    t.Errorf("No Duplicate Filter")
+  }
+
+  if !m.Run(test_jsonrpc_send_ncp) {
+    t.Errorf("Excessive Filter")
+  }
+
+  if m.Run(test_jsonrpc_send_ncp) {
+    t.Errorf("No Duplicate Filter")
+  }
+}
+
+func Test_RpcRun_limit(t *testing.T) {
+	m := RpcRun{}
+	m.Run(test_jsonrpc_send)
+
+	if m.Run(test_jsonrpc_send) {
+		t.Errorf("No Duplicate Filter")
+	}
+
+	// Max record 128
+	for i := 0; i <= 127; i++ {
+		call := `{"jsonrpc":"2.0","id":"` + strconv.Itoa(i) + `","method":"link","params":["power_on_drone"]}`
+		m.Run(call)
+	}
+
+	if !m.Run(test_jsonrpc_send) {
+		t.Errorf("Filter Max not 128 items")
+	}
 }
 
 func Test_isNcp(t *testing.T) {
