@@ -80,12 +80,17 @@ func isLink(s string) bool {
 	}
 }
 
-func linkCall(raw string, caller int) string {
+func linkCall(raw string, caller int) (string, func(string) string) {
 	rpc := getJSONRPC(raw)
 	var params []string
 	json.Unmarshal(*rpc.Params, &params)
 
 	bit13_timestamp := string([]byte(strconv.FormatInt(time.Now().UnixNano(), 10))[:13])
-	return `{"jsonrpc":"2.0","id":"ncp.` + strconv.Itoa(caller) + `-` + bit13_timestamp + `","method":"` + params[0] + `","params":[]}`
+	jsonrpc := `{"jsonrpc":"2.0","id":"ncp.` + strconv.Itoa(caller) + `-` + bit13_timestamp + `","method":"` + params[0] + `","params":[]}`
+	return jsonrpc, func(s string) string {
+		rrpc := getJSONRPC(s)
+		//rrpc.Id = rpc.Id
+		return `{"jsonrpc":"2.0","result":"` + rrpc.Result.(string) + `","id":"` + rpc.Id + `"}`
+	}
 }
 

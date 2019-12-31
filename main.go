@@ -142,9 +142,9 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 			}
     case x = <- ch_socketc_i:
       if isLink(x) {
-				xx := linkCall(x, server.Id)
+				xx, callback := linkCall(x, server.Id)
 				go func() {
-					ch_socketc <-syncMqttRpc(mqtt.client, server.Link_id, xx)
+					ch_socketc <-callback(syncMqttRpc(mqtt.client, server.Link_id, xx))
 				}()
 				fmt.Println("[Link Call] " + x)
 				x = ""
