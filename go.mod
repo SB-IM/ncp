@@ -10,5 +10,6 @@ require (
 	github.com/pion/rtcp v1.2.1
 	github.com/pion/rtp v1.1.4
 	github.com/pion/webrtc/v2 v2.1.16
+	golang.org/x/tools v0.0.0-20191230220329-2aa90c603ae3
 	gopkg.in/yaml.v2 v2.2.7
 )

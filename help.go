@@ -88,9 +88,14 @@ func linkCall(raw string, caller int) (string, func(string) string) {
 	bit13_timestamp := string([]byte(strconv.FormatInt(time.Now().UnixNano(), 10))[:13])
 	jsonrpc := `{"jsonrpc":"2.0","id":"ncp.` + strconv.Itoa(caller) + `-` + bit13_timestamp + `","method":"` + params[0] + `","params":[]}`
 	return jsonrpc, func(s string) string {
-		rrpc := getJSONRPC(s)
-		//rrpc.Id = rpc.Id
-		return `{"jsonrpc":"2.0","result":"` + rrpc.Result.(string) + `","id":"` + rpc.Id + `"}`
+		rrpc := WireResponse{}
+		err := json.Unmarshal([]byte(s), &rrpc)
+		if err != nil {
+			//fmt.Println(err)
+		}
+		rrpc.ID.Name = rpc.Id
+		rrr, _ := json.Marshal(rrpc)
+		return string(rrr)
 	}
 }
 
