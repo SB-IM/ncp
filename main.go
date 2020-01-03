@@ -139,6 +139,7 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 				ch_mqtt_o <- confirmNotice(x)
 			} else {
 				Filter.Println(x)
+				x = ""
 			}
     case x = <- ch_socketc_i:
       if isLink(x) {
