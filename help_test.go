@@ -121,10 +121,9 @@ func Test_isLink(t *testing.T) {
 
 func Test_linkCall(t *testing.T) {
 	linkcall := `{"jsonrpc":"2.0","id":"sdwc.1-155332103904","method":"link","params":["power_on_drone"]}`
-	//t.Errorf(linkCall(linkcall, 2))
 
-	req, _ := linkCall(linkcall, 2)
-	if getJSONRPC(req).Method != "power_on_drone" {
+	req, _, _ := linkCall([]byte(linkcall), "test.0-0000")
+	if getJSONRPC(string(req)).Method != "power_on_drone" {
 		t.Errorf("Not Link")
 	}
 }
@@ -132,13 +131,12 @@ func Test_linkCall(t *testing.T) {
 func Test_linkCall_id(t *testing.T) {
 	linkcall := `{"jsonrpc":"2.0","id":"test","method":"link","params":["power_on_drone"]}`
 
-	// 这里有个问题：目前 result 只能支持字符串
-	//test_jsonrpc_recv_r := `{"jsonrpc":"2.0","result":"move_door_open","id":"sdwc.1-1553321035000"}`
 	test_jsonrpc_recv_r := `{"jsonrpc":"2.0","result":["move_door_open","power_ir_on"],"id":"sdwc.1-1553321035000"}`
-	_, callback := linkCall(linkcall, 2)
-	if getJSONRPC(linkcall).Id != getJSONRPC(callback(test_jsonrpc_recv_r)).Id {
+	_, _, callback := linkCall([]byte(linkcall), "test.0-0000")
+	res, _ := callback([]byte(test_jsonrpc_recv_r))
+	if getJSONRPC(linkcall).Id != getJSONRPC(string(res)).Id {
 		t.Errorf(getJSONRPC(linkcall).Id)
-		t.Errorf(getJSONRPC(callback(test_jsonrpc_recv_r)).Id)
+		t.Errorf(getJSONRPC(string(res)).Id)
 		t.Errorf("id not equal")
 	}
 }

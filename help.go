@@ -1,9 +1,7 @@
 package main
 
 import (
-  "encoding/json"
-	"strconv"
-	"time"
+	"encoding/json"
 
 	"github.com/SB-IM/jsonrpc2"
 )
@@ -82,22 +80,37 @@ func isLink(s string) bool {
 	}
 }
 
-func linkCall(raw string, caller int) (string, func(string) string) {
-	rpc := getJSONRPC(raw)
-	var params []string
-	json.Unmarshal(*rpc.Params, &params)
+func linkCall(req []byte, id string) ([]byte, error, func([]byte) ([]byte, error)) {
+	jsonrpc_req := jsonrpc2.WireRequest{}
+	err := json.Unmarshal(req, &jsonrpc_req)
+	src_id := *jsonrpc_req.ID
 
-	bit13_timestamp := string([]byte(strconv.FormatInt(time.Now().UnixNano(), 10))[:13])
-	jsonrpc := `{"jsonrpc":"2.0","id":"ncp.` + strconv.Itoa(caller) + `-` + bit13_timestamp + `","method":"` + params[0] + `","params":[]}`
-	return jsonrpc, func(s string) string {
-		rrpc := jsonrpc2.WireResponse{}
-		err := json.Unmarshal([]byte(s), &rrpc)
+	callback := func(res []byte) ([]byte, error) {
+		jsonrpc_res := jsonrpc2.WireResponse{}
+		err := json.Unmarshal([]byte(res), &jsonrpc_res)
 		if err != nil {
-			//fmt.Println(err)
+			return []byte(""), err
 		}
-		rrpc.ID.Name = rpc.Id
-		rrr, _ := json.Marshal(rrpc)
-		return string(rrr)
+		jsonrpc_res.ID = &src_id
+		return json.Marshal(jsonrpc_res)
 	}
+
+	if err != nil {
+		return []byte(""), err, callback
+	}
+
+	raw_params, _ := jsonrpc_req.Params.MarshalJSON()
+	var params []string
+	err = json.Unmarshal(raw_params, &params)
+	if err != nil {
+		return []byte(""), err, callback
+	}
+
+	jsonrpc_req.Method = params[0]
+	jsonrpc_req.Params = nil
+	jsonrpc_req.ID.Name = id
+
+	jsonrpc, err := json.Marshal(jsonrpc_req)
+	return jsonrpc, err, callback
 }
 

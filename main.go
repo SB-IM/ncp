@@ -141,15 +141,27 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 				Filter.Println(x)
 				x = ""
 			}
-    case x = <- ch_socketc_i:
-      if isLink(x) {
-				xx, callback := linkCall(x, server.Id)
+		case x = <-ch_socketc_i:
+			if isLink(x) {
+				bit13_timestamp := string([]byte(strconv.FormatInt(time.Now().UnixNano(), 10))[:13])
+				override_id := "ncp." + strconv.Itoa(server.Id) + "-" + bit13_timestamp
+
+				req, err, callback := linkCall([]byte(x), override_id)
+				if err != nil {
+					fmt.Println(err)
+				}
+
 				go func() {
-					ch_socketc <-callback(syncMqttRpc(mqtt.client, server.Link_id, xx))
+					res, err := callback([]byte(syncMqttRpc(mqtt.client, server.Link_id, string(req))))
+					if err != nil {
+						fmt.Println(err)
+					}
+					ch_socketc <-string(res)
 				}()
+
 				fmt.Println("[Link Call] " + x)
 				x = ""
-      }
+			}
 
     case x = <- input:
       //fmt.Println("Recvice", x)
