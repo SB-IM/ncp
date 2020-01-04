@@ -248,7 +248,7 @@ func ncpCmd(ncp *NcpCmd, raw string) string {
 	fmt.Println(string(result))
 	if e := results.([]reflect.Value)[1].Interface(); e != nil {
 		fmt.Println(e.(error))
-		s = `"error": "EEEEEEEEEEEEE"`
+		s = `"error": "` + e.(error).Error() + `"`
 	}
 
 	return `{"jsonrpc":"2.0",`+s+`,"id":"` + rpc.Id + `"}`

@@ -106,7 +106,7 @@ func socketRecv(conn net.Conn, ch chan string) {
   for {
     cnt, err := conn.Read(buf)
     if err != nil || cnt == 0 {
-      fmt.Println("EEEEEEEEEEee")
+      fmt.Println("Socket close")
       conn.Close()
       break
     }
