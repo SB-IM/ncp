@@ -4,6 +4,8 @@ import (
   "encoding/json"
 	"strconv"
 	"time"
+
+	"github.com/SB-IM/jsonrpc2"
 )
 
 func isJSON(s string) bool {
@@ -88,7 +90,7 @@ func linkCall(raw string, caller int) (string, func(string) string) {
 	bit13_timestamp := string([]byte(strconv.FormatInt(time.Now().UnixNano(), 10))[:13])
 	jsonrpc := `{"jsonrpc":"2.0","id":"ncp.` + strconv.Itoa(caller) + `-` + bit13_timestamp + `","method":"` + params[0] + `","params":[]}`
 	return jsonrpc, func(s string) string {
-		rrpc := WireResponse{}
+		rrpc := jsonrpc2.WireResponse{}
 		err := json.Unmarshal([]byte(s), &rrpc)
 		if err != nil {
 			//fmt.Println(err)

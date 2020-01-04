@@ -1,6 +1,3 @@
 [submodule "golib/starlight"]
 	path = golib/starlight
 	url = git@gitlab.com:sbim/superdock/links/starlight.git
-[submodule "golib/jsonrpc2"]
-	path = golib/jsonrpc2
-	url = git@github.com:SB-IM/jsonrpc2.git

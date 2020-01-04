@@ -15,7 +15,6 @@ dep:
 	sed -i 's#gst "./gstreamer-src"#gst "gstreamer-src"#g' light/gst2webrtcH264.go
 	mv gstreamer-src vendor
 	mv light vendor
-	cp -r golib/jsonrpc2 vendor
 
 build:
 	go build -mod=vendor
