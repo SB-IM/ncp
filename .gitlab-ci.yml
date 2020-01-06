@@ -23,7 +23,7 @@ test_noruby:
     - make test
   only:
     refs:
-      - noruby
+      - master
       - dev
 
 packaging:
@@ -41,8 +41,8 @@ packaging:
     - apt-get update -y && apt-get install -y xz-utils
     - tar -cJf - ./ | ssh build@api.sb.im -p 6001 'cd `bin/pre_build.sh ncp` && tar -xJf - && ~/bin/build.sh'
   only:
-    refs:
-      - master
+    only:
+      - tags
 
 deploy_simulation:
   before_script:
