@@ -1,15 +1,6 @@
 
 pkgname=ncp
-pkgver=0.2.1
-arch=arm
-#arch=amd64
-
-srcdir=${pkgname}_${pkgver}_linux_${arch}
-
-GOOS=linux GOARCH=${arch} go build
-
-
-bundler install --path=vendor
+pkgver=1.0.0.internal.0
 
 arch=armhf
 
@@ -22,6 +13,7 @@ cat > debian/rules << EOF
 
 EOF
 
+# libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good
 cat > debian/control << EOF
 Source: ncp
 Maintainer: a-wing <1@233.email>
@@ -29,35 +21,17 @@ Build-Depends: debhelper (>= 8.0.0), golang (>= 1.11)
 Standards-Version: 3.9.3
 Section: utils
 
-Package: ncpgo
+Package: ncp
 Priority: extra
 Architecture: ${arch}
-Description: Go Node control protocol
-
-Package: ncpcmd
-Priority: extra
-Architecture: ${arch}
-Depends: ncpgo, ruby, ruby-bundler
 Description: Node control protocol
 EOF
 
-cat > debian/ncpgo.install << EOF
-ncpgo usr/bin/
-ncpgo.service lib/systemd/system/
-config-dist.yml etc/ncp/
-EOF
-
-cat > debian/ncpcmd.install << EOF
-ncp.rb usr/lib/ncp/
-Gemfile* usr/lib/ncp/
-lib usr/lib/ncp/
-scripts usr/lib/ncp/
-log usr/lib/ncp/
-vendor usr/lib/ncp/
-.bundle usr/lib/ncp/
-wait_time_sync.sh usr/lib/ncp/
-
-ncp.service lib/systemd/system/
+cat > debian/ncp.install << EOF
+ncp usr/bin/
+conf/ncp.service lib/systemd/system/
+conf/ncp@.service lib/systemd/system/
+conf/config-dist.yml etc/ncp/
 EOF
 
 cat > debian/changelog << EOF
@@ -70,7 +44,8 @@ EOF
 
 echo 9 > debian/compat
 
-debuild -us -uc
+# repo golang 1.11.x   Need use golang 1.13.x
+debuild --prepend-path=`which go | sed s'#/go$##'` -us -uc
 
 rm -r debian
 
