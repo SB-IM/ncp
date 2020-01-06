@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
   "fmt"
   "log"
   "net/url"
@@ -255,7 +256,24 @@ func ncpCmd(ncp *NcpCmd, raw string) string {
 }
 
 func main() {
-  config_path := "./config.yml"
+	config_path := "config.yml"
+
+	help := flag.Bool("h", false, "this help")
+	flag.StringVar(&config_path, "c", "config.yml", "set configuration file")
+
+	show_version := flag.Bool("v", false, "show version")
+	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		return
+	}
+
+	if *show_version {
+		fmt.Println(version)
+		return
+	}
+
   if os.Getenv("NCP_CONF") != "" {
     config_path = os.Getenv("NCP_CONF")
   }

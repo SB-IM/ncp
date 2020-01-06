@@ -1,4 +1,5 @@
 config.yml
+version.go
 
 /log/*
 !/log/.keep

@@ -15,6 +15,7 @@ dep:
 	sed -i 's#gst "./gstreamer-src"#gst "gstreamer-src"#g' light/gst2webrtcH264.go
 	mv gstreamer-src vendor
 	mv light vendor
+	sh get_version.sh
 
 build:
 	go build -mod=vendor
