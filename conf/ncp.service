@@ -1,0 +1,18 @@
+[Unit]
+Description=Node control protocol module
+After=network.target
+# http api-auth need time sync after
+# https://www.freedesktop.org/software/systemd/man/systemd-time-wait-sync.service.html
+After=systemd-time-wait-sync.service
+
+[Service]
+Type=simple
+User=nobody
+Restart=on-failure
+RestartSec=5s
+ExecStart=/usr/bin/ncp -c /etc/ncp/config.yml
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
+

@@ -7,11 +7,10 @@ After=systemd-time-wait-sync.service
 
 [Service]
 Type=simple
-Environment=NCP_CONF=/etc/ncp/config.yml
 User=nobody
 Restart=on-failure
 RestartSec=5s
-ExecStart=/usr/bin/ncpgo
+ExecStart=/usr/bin/ncp -c /etc/ncp/%i.yml
 KillSignal=SIGINT
 
 [Install]
