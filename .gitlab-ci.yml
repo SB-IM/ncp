@@ -1,15 +1,6 @@
 image: golang:1.13.1-buster
 
 test:
-  script:
-    - go version
-    - go build
-    - go test -cover -v
-  only:
-    refs:
-      - master
-
-test_noruby:
   before_script:
     - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/sbim/superdock/links/starlight.git".insteadOf git@gitlab.com:sbim/superdock/links/starlight.git
     - git submodule sync && git submodule update --init
