@@ -1,6 +1,7 @@
 
 pkgname=ncp
 pkgver=1.0.0.internal.0
+pkgrel=1
 
 arch=armhf
 
@@ -23,19 +24,25 @@ Section: utils
 
 Package: ncp
 Priority: extra
+Depends: gstreamer1.0-plugins-good (>= 1.14)
 Architecture: ${arch}
 Description: Node control protocol
 EOF
 
 cat > debian/ncp.install << EOF
-ncp usr/bin/
+ncp usr/lib/${pkgname}/
+scripts usr/lib/${pkgname}/
 conf/ncp.service lib/systemd/system/
 conf/ncp@.service lib/systemd/system/
 conf/config-dist.yml etc/ncp/
 EOF
 
+cat > debian/ncp.links << EOF
+usr/lib/${pkgname}/ncp /usr/bin/ncp
+EOF
+
 cat > debian/changelog << EOF
-${pkgname} (${pkgver}-0) unstable; urgency=low
+${pkgname} (${pkgver}-${pkgrel}) unstable; urgency=low
 
   * Initial release.
 
