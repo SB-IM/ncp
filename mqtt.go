@@ -78,6 +78,15 @@ func syncMqttRpc(client mqtt.Client, id int, send string) string {
 	})
 	client.Publish(topic + "send", 2, false, send)
 	logger.Println("Req: " + send)
-	return <-ch_recv
+
+	for {
+		select {
+		case <-time.After(10 * time.Second):
+			client.Publish(topic + "send", 2, false, send)
+			logger.Println("Req: " + send)
+		case result := <-ch_recv:
+			return result
+		}
+	}
 }
 
