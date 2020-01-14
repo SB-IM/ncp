@@ -137,7 +137,8 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
     select {
     case x = <- ch_mqtt_i:
 			if rpc_run.Run(x) {
-				ch_mqtt_o <- confirmNotice(x)
+				// Disable Notify ack
+				//ch_mqtt_o <- confirmNotice(x)
 			} else {
 				Filter.Println(x)
 				x = ""

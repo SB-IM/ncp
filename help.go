@@ -39,6 +39,14 @@ type RpcRun struct {
 }
 
 func (this *RpcRun) Run(s string) bool {
+	rpc := jsonrpc2.Jsonrpc{}
+	//err := json.Unmarshal(req, &jsonrpc)
+	json.Unmarshal([]byte(s), &rpc)
+	if rpc.IsNotify() {
+		return true
+	}
+
+
 	id := getJSONRPC(s).Id
 	if func(str string, array []string) bool {
 		for _, r := range array {
