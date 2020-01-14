@@ -77,6 +77,19 @@ func Test_RpcRun(t *testing.T) {
 	}
 }
 
+func Test_RpcRun_Notify(t *testing.T) {
+	test_jsonrpc_notify := `{"jsonrpc":"2.0","method":"dooropen","params":[]}`
+	m := RpcRun{}
+
+	if !m.Run(test_jsonrpc_notify) {
+		t.Errorf("Filter Notify")
+	}
+
+	if !m.Run(test_jsonrpc_notify) {
+		t.Errorf("Filter Notify")
+	}
+}
+
 func Test_RpcRun_limit(t *testing.T) {
 	m := RpcRun{}
 	m.Run(test_jsonrpc_send)
