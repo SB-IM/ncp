@@ -1,3 +1,0 @@
-[submodule "golib/starlight"]
-	path = golib/starlight
-	url = git@gitlab.com:sbim/superdock/links/starlight.git
