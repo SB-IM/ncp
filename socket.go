@@ -40,7 +40,12 @@ func socketTran(conn net.Conn, client mqtt.Client, topic_prefix string) {
         tag = strings.Split(strings.Split(x, " ")[1], "/")[2]
         logger.Println("Set tag: " + tag)
       } else {
-        client.Publish(topic_prefix + "/msg/" + tag, 0, true, x)
+				//client.Publish(topic_prefix + "/msg/" + tag, 0, true, x)
+				dataMap := detachTran([]byte(x))
+				for k, v := range dataMap {
+					logger.Println(k + " --> " + string(v))
+					client.Publish(topic_prefix + "/msg/" + k, 0, true, string(v))
+				}
       }
     }
   }()
