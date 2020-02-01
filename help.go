@@ -132,3 +132,13 @@ func detachTran(raw []byte) (map[string][]byte) {
 	return dstMap
 }
 
+func getReg(raw []byte) ([]string, bool) {
+	var params []string
+	if getJSONRPC(string(raw)).Method == "reg" {
+		raw_params, _ := getJSONRPC(string(raw)).Params.MarshalJSON()
+		_ = json.Unmarshal(raw_params, &params)
+		return params, true
+	}
+	return params, false
+}
+

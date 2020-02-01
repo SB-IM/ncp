@@ -123,7 +123,9 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 
   // Socket Server
   ch_sockets := make(chan string, 100)
-  go socketServer(server.Tcps, ch_sockets, input)
+	//go socketServer(server.Tcps, ch_sockets, input)
+	socketServer := &SocketServer{}
+	go socketServer.Listen(server.Tcps, os.Stdout, ch_sockets, input)
 
   // Socket tran
   go socketServerTran(server.Tran, mqtt.client, "nodes/" + strconv.Itoa(server.Id))
@@ -181,6 +183,7 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
       ch_mqtt_o <- x
     case isJSONRPCSend(x):
       ch_socketc <- x
+      ch_sockets <- x
     default:
       Default.Println(x)
       ch_mqtt_message <- x

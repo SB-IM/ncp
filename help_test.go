@@ -201,3 +201,16 @@ func Test_detachTran_multiple(t *testing.T) {
 	}
 }
 
+func Test_getReg(t *testing.T) {
+	reg := `{"jsonrpc":"2.0","id":"test.0-00000000","method":"reg","params":["status", "webrtc"]}`
+
+	methods, ok := getReg([]byte(reg))
+
+	if !ok {
+		t.Errorf("Not Reg")
+		for _, method := range methods {
+			t.Errorf(method)
+		}
+	}
+}
+
