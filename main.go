@@ -124,8 +124,10 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
   // Socket Server
   ch_sockets := make(chan string, 100)
 	//go socketServer(server.Tcps, ch_sockets, input)
-	socketServer := &SocketServer{}
-	go socketServer.Listen(server.Tcps, os.Stdout, ch_sockets, input)
+	socketServer := &SocketServer{
+		logger: log.New(os.Stdout, "[Server] ", log.LstdFlags),
+	}
+	go socketServer.Listen(server.Tcps, ch_sockets, input)
 
   // Socket tran
   go socketServerTran(server.Tran, mqtt.client, "nodes/" + strconv.Itoa(server.Id))

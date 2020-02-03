@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net"
-	"os"
 	"strings"
 	"sync"
 )
@@ -14,15 +13,15 @@ type Link struct {
 }
 
 type SocketServer struct {
-	links []*Link
-	lock  sync.Mutex
+	links  []*Link
+	lock   sync.Mutex
+	logger *log.Logger
 }
 
-func (this *SocketServer) Listen(addr string, file *os.File, input chan string, output chan string) {
-	logger := log.New(file, "[Server] ", log.LstdFlags)
+func (this *SocketServer) Listen(addr string, input chan string, output chan string) {
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		logger.Println(err)
+		this.logger.Println("Listener:", addr, err)
 	}
 	defer listener.Close()
 
@@ -30,12 +29,10 @@ func (this *SocketServer) Listen(addr string, file *os.File, input chan string, 
 
 	for {
 		conn, err := listener.Accept()
-		logger.Println("New connect")
+		this.logger.Println("New Connect:", &conn)
 		if err != nil {
-			logger.Println(err)
+			this.logger.Println("Connect Err:", &conn, err)
 		} else {
-			this.links = append(this.links, &Link{conn: &conn})
-			logger.Println(this.links)
 			go this.recv(&conn, input)
 		}
 	}
@@ -64,6 +61,7 @@ func (this *SocketServer) delLink(link *Link) {
 func (this *SocketServer) send(input chan string) {
 	for msg := range input {
 		for _, conn := range this.getMethodMatchConns(getJSONRPC(msg).Method) {
+			this.logger.Println("Send:", conn, msg)
 			(*conn).Write([]byte(msg + "\n"))
 		}
 	}
@@ -83,6 +81,7 @@ func (this *SocketServer) recv(conn *net.Conn, output chan string) {
 	for {
 		cnt, err := (*conn).Read(buf)
 		if err != nil || cnt == 0 {
+			this.logger.Println("Connect Err:", conn, err)
 			break
 		}
 		msg := strings.TrimSpace(string(buf[0:cnt]))
@@ -90,7 +89,9 @@ func (this *SocketServer) recv(conn *net.Conn, output chan string) {
 		if ok {
 			link.methods = methods
 			this.addLink(link)
+			this.logger.Println("Method Reg:", conn, methods)
 		} else {
+			this.logger.Println("Recv:", conn, msg)
 			output <- msg
 		}
 	}

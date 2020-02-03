@@ -1,13 +1,20 @@
 package main
 
 import (
+	"log"
 	"net"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 )
+
+func fakeLogger() *log.Logger {
+	_, logfile, _ := os.Pipe()
+	return log.New(logfile, "[Server Test] ", log.LstdFlags)
+}
 
 func Test_GetMethods(t *testing.T) {
 	server, client := net.Pipe()
@@ -16,6 +23,7 @@ func Test_GetMethods(t *testing.T) {
 	method_group_2 := []string{"test3", "test4"}
 
 	socketServer := &SocketServer{
+		logger: fakeLogger(),
 		links: []*Link{
 			&Link{
 				conn:    &server,
@@ -51,6 +59,7 @@ func Test_getMethodMatchConns(t *testing.T) {
 	method_group_2 := []string{"test3", "test4"}
 
 	socketServer := &SocketServer{
+		logger: fakeLogger(),
 		links: []*Link{
 			&Link{
 				conn:    &server,
@@ -101,7 +110,8 @@ func Test_AddDelLink(t *testing.T) {
 	}
 
 	socketServer := &SocketServer{
-		links: []*Link{},
+		logger: fakeLogger(),
+		links:  []*Link{},
 	}
 
 	socketServer.addLink(link_client)
@@ -121,7 +131,9 @@ func Test_AddDelLink(t *testing.T) {
 
 func Test_SocketServerRecv(t *testing.T) {
 	server, client := net.Pipe()
-	socketServer := &SocketServer{}
+	socketServer := &SocketServer{
+		logger: fakeLogger(),
+	}
 
 	output := make(chan string)
 	go socketServer.recv(&server, output)
@@ -152,6 +164,7 @@ func Test_SocketServerSend(t *testing.T) {
 	method_group_2 := []string{"test3", "test4"}
 
 	socketServer := &SocketServer{
+		logger: fakeLogger(),
 		links: []*Link{
 			&Link{
 				conn:    &server,
