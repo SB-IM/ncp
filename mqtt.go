@@ -90,3 +90,15 @@ func syncMqttRpc(client mqtt.Client, id int, send string) string {
 	}
 }
 
+// Refactor After ----------------
+
+func mqttTran(client mqtt.Client, logger *log.Logger, topic_prefix string, ch chan string) {
+	for x := range ch {
+		dataMap := detachTran([]byte(x))
+		for k, v := range dataMap {
+			logger.Println(k + " --> " + string(v))
+			client.Publish(topic_prefix + "/msg/" + k, 0, false, string(v))
+		}
+	}
+}
+

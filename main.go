@@ -71,7 +71,6 @@ func ncp(ncp *NcpCmd, input chan string, output chan string) {
 func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 
   //Center := log.New(os.Stdout, "[Center] ", log.LstdFlags)
-  Default := log.New(os.Stdout, "[Default] ", log.LstdFlags)
 
   input := make(chan string, 100)
 
@@ -101,6 +100,9 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 	ch_mqtt_message := make(chan string, 100)
   go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, true, ch_mqtt_message)
 
+	ch_mqtt_msg := make(chan string, 100)
+	go mqttTran(mqtt.client, log.New(os.Stdout, "[Mqtt Tran] ", log.LstdFlags), "nodes/" + strconv.Itoa(server.Id), ch_mqtt_msg)
+
   go func(){
     for sig := range s {
       // sig is a ^C, handle it
@@ -121,16 +123,19 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
   ch_socketc := make(chan string, 100)
   go socketClient(server.Tcpc, ch_socketc, ch_socketc_i)
 
-  // Socket Server
-  ch_sockets := make(chan string, 100)
-	//go socketServer(server.Tcps, ch_sockets, input)
+	// Socket Server
+	ch_sockets := make(chan string, 100)
 	socketServer := &SocketServer{
 		logger: log.New(os.Stdout, "[Server] ", log.LstdFlags),
 	}
 	go socketServer.Listen(server.Tcps, ch_sockets, input)
 
-  // Socket tran
-  go socketServerTran(server.Tran, mqtt.client, "nodes/" + strconv.Itoa(server.Id))
+	// Socket tran
+	ch_no_message := make(chan string)
+	socketServerTran := &SocketServer{
+		logger: log.New(os.Stdout, "[Socket Tran] ", log.LstdFlags),
+	}
+	go socketServerTran.Listen(server.Tran, ch_no_message, input)
 
 	// Router
 	var x string
@@ -187,8 +192,8 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
       ch_socketc <- x
       ch_sockets <- x
     default:
-      Default.Println(x)
-      ch_mqtt_message <- x
+      //ch_mqtt_message <- x
+      ch_mqtt_msg <- x
     }
   }
 }
