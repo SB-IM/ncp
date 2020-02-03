@@ -33,7 +33,7 @@ func (this *SocketServer) Listen(addr string, input chan string, output chan str
 		if err != nil {
 			this.logger.Println("Connect Err:", &conn, err)
 		} else {
-			go this.recv(&conn, input)
+			go this.recv(&conn, output)
 		}
 	}
 }
