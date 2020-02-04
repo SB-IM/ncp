@@ -68,11 +68,14 @@ func ncp(ncp *NcpCmd, input chan string, output chan string) {
   }
 }
 
-func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
+func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_log *ConfigLog) {
+	logGroup, err := logGroupNew(config_log)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-  //Center := log.New(os.Stdout, "[Center] ", log.LstdFlags)
-
-  input := make(chan string, 100)
+	// default input
+	input := make(chan string, 100)
 
   // Mqtt
   //uri, err := url.Parse(os.Getenv("MQTT_URL"))
@@ -80,8 +83,6 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
   if err != nil {
     log.Fatal(err)
   }
-
-  //logger_mqtt := log.New(os.Stdout, "[Mqtt] ", log.LstdFlags)
 
   ch_mqtt_i := make(chan string, 100)
   ch_mqtt_o := make(chan string, 100)
@@ -103,16 +104,18 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 	ch_mqtt_msg := make(chan string, 100)
 	go mqttTran(mqtt.client, log.New(os.Stdout, "[Mqtt Tran] ", log.LstdFlags), "nodes/" + strconv.Itoa(server.Id), ch_mqtt_msg)
 
-  go func(){
-    for sig := range s {
-      // sig is a ^C, handle it
-      fmt.Println("Got signal:", sig)
-      mqttSetOnline(mqtt.client, n.Status, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
-      fmt.Println("set offline done")
-      time.Sleep(10 * time.Millisecond)
-      mqtt.client.Disconnect(1)
-    }
-  }()
+	defer func() {
+		mqttSetOnline(mqtt.client, n.Status, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
+		fmt.Println("set offline done")
+
+		// Need Wait Set offline
+		time.Sleep(10 * time.Millisecond)
+		mqtt.client.Disconnect(1)
+
+		if err = logGroup.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
   // Ncp
   ch_ncp := make(chan string, 100)
@@ -126,14 +129,15 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 	// Socket Server
 	ch_sockets := make(chan string, 100)
 	socketServer := &SocketServer{
-		logger: log.New(os.Stdout, "[Server] ", log.LstdFlags),
+		logger: logGroup.Get("tcps"),
 	}
 	go socketServer.Listen(server.Tcps, ch_sockets, input)
 
 	// Socket tran
 	ch_no_message := make(chan string)
 	socketServerTran := &SocketServer{
-		logger: log.New(os.Stdout, "[Socket Tran] ", log.LstdFlags),
+		//logger: log.New(logfile_tran, "[Socket Tran] ", log.LstdFlags),
+		logger: logGroup.Get("tran"),
 	}
 	go socketServerTran.Listen(server.Tran, ch_no_message, input)
 
@@ -176,6 +180,10 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp) {
 
     case x = <- input:
       //fmt.Println("Recvice", x)
+		case sig := <- s:
+			// sig is a ^C, handle it
+			fmt.Println("Got signal:", sig)
+			return
     }
 
     if x == "" { continue }
@@ -309,37 +317,9 @@ func main() {
 	// init, Golang has no constructor
   ncpCmd.Init()
 
-	fmt.Println(ncpCmd)
-  //err = ncpCmd.Download("map", "http://localhost:3000/ncp/v1/plans/12/get_map")
-  //err = ncpCmd.Upload("map", "http://localhost:3000/ncp/v1/plans/14/plan_logs/41")
-  //err = ncpCmd.Upload("air_log", "http://localhost:3000/ncp/v1/plans/14/plan_logs/41")
-  //fmt.Println(ncpCmd.Status())
-  //fmt.Println(ncpCmd.Shell("test"))
-  //CallObjectMethod(&ncpCmd, Ucfirst("download"), "map", "http://localhost:3000/ncp/v1/plans/12/get_map")
-
-	//results := CallObjectMethod(&ncpCmd, Ucfirst("download"), "map", "http://localhost:3000/ncp/v1/plans/12/get_map")
-
-	//results := CallObjectMethod(&ncpCmd, Ucfirst("status"))
-	//result := results.([]reflect.Value)[0].Interface().([]byte)
-
-	//fmt.Println(string(result))
-	//if e := results.([]reflect.Value)[1].Interface(); e != nil {
-	//	fmt.Println(e.(error))
-	//}
-
-
-  s := make(chan os.Signal)
-  go msgCenter(s, config.Server, &ncpCmd, config.Ncp)
-
-  //for {
-  //  time.Sleep(1000000000)
-  //}
   c := make(chan os.Signal, 1)
   signal.Notify(c, os.Interrupt)
 
-  // Block until a signal is received.
-  s <- <-c
-  fmt.Println("Got signal:", s)
-  time.Sleep(100 * time.Millisecond)
+	msgCenter(c, config.Server, &ncpCmd, config.Ncp, &config.Log)
 }
 

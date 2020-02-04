@@ -46,10 +46,10 @@ type Status struct {
 }
 
 type Config struct {
-  Server
-  Env string
-  Log_level string
-  Ncp
+	Server
+	Env string
+	Log ConfigLog
+	Ncp
 }
 
 func getConfig(str string) (Config, error) {
