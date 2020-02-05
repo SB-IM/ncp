@@ -2,12 +2,7 @@ image: golang:1.13.1-buster
 
 test:
   before_script:
-    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/sbim/superdock/links/starlight.git".insteadOf git@gitlab.com:sbim/superdock/links/starlight.git
-    - git submodule sync && git submodule update --init
-#  variables:
-#    GIT_SUBMODULE_STRATEGY: recursive
   script:
-    - apt-get update -y && apt-get install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good
     - go version
     - make dep
     - make build
@@ -53,5 +48,5 @@ deploy_simulation:
     - tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'rm -rf ncp && mkdir -p ncp && cd ncp && tar -xJf - && PATH="$HOME/go/bin:$PATH" make build && ../ncp_restart.sh'
   only:
     refs:
-      - dev
+      - master
 
