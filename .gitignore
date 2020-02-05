@@ -1,5 +1,6 @@
 config.yml
 version.go
+ncp
 
 /log/*
 !/log/.keep
