@@ -1,7 +1,6 @@
 package main
 
 import (
-  "os"
   "log"
   "time"
   "strconv"
@@ -27,10 +26,9 @@ type mqttProxy struct {
   ch_rpc_recv chan string
 }
 
-func (this *mqttProxy) Connect(status Status, clientId string, uri *url.URL, willTopic string) mqtt.Client {
+func (this *mqttProxy) Connect(status Status, logger *log.Logger, clientId string, uri *url.URL, willTopic string) mqtt.Client {
   opts := setUri(uri)
   opts.SetWill(willTopic, `{"code":2,"msg":"neterror"}`, 2, true)
-  logger := log.New(os.Stdout, "[Mqtt] ", log.LstdFlags)
 
   opts.SetClientID(clientId)
 
@@ -46,10 +44,11 @@ func (this *mqttProxy) Connect(status Status, clientId string, uri *url.URL, wil
 
   // Connect && Reconnect callback
   opts.SetOnConnectHandler(func (client mqtt.Client) {
-    logger.Println("New Connect")
     clientOptionsReader := client.OptionsReader()
     mqttSetOnline(client, status, clientOptionsReader.WillTopic(), "online")
-    go mqttRecv(client, "nodes/" + this.id + "/rpc/send", 2, this.ch_rpc_recv)
+
+		logger.Println("New Connect", &client)
+		go mqttRecv(client, logger, "nodes/" + this.id + "/rpc/send", 2, this.ch_rpc_recv)
   })
 
   client := mqtt.NewClient(opts)
@@ -63,8 +62,9 @@ func (this *mqttProxy) Connect(status Status, clientId string, uri *url.URL, wil
   return client
 }
 
-func syncMqttRpc(client mqtt.Client, id int, send string) string {
-	logger := log.New(os.Stdout, "[Mqtt Rpc] ", log.LstdFlags)
+// Refactor After ----------------
+
+func syncMqttRpc(client mqtt.Client, logger *log.Logger, id int, send string) string {
 	invoking := getJSONRPC(send).Id
 	topic := "nodes/" + strconv.Itoa(id) + "/rpc/"
 	ch_recv := make(chan string)
@@ -72,25 +72,42 @@ func syncMqttRpc(client mqtt.Client, id int, send string) string {
 		msg := string(mqtt_msg.Payload())
 		if invoking == getJSONRPC(msg).Id {
 			client.Unsubscribe(topic + "recv")
-			logger.Println("Res: " + msg)
+			logger.Println("Res:", msg)
 			ch_recv <-msg
 		}
 	})
-	client.Publish(topic + "send", 2, false, send)
-	logger.Println("Req: " + send)
+
+	msgSend := func() {
+		client.Publish(topic + "send", 2, false, send)
+		logger.Println("Req:", send)
+	}
+
+	msgSend()
 
 	for {
 		select {
 		case <-time.After(10 * time.Second):
-			client.Publish(topic + "send", 2, false, send)
-			logger.Println("Req: " + send)
+			msgSend()
 		case result := <-ch_recv:
 			return result
 		}
 	}
 }
 
-// Refactor After ----------------
+func mqttRecv(client mqtt.Client, logger *log.Logger, topic string, qos byte, ch chan string) {
+	client.Subscribe(topic, qos, func(client mqtt.Client, msg mqtt.Message) {
+		m := string(msg.Payload())
+		logger.Println("Recv:", m)
+		ch <- m
+	})
+}
+
+func mqttSend(client mqtt.Client, logger *log.Logger, topic string, qos byte, retained bool, ch chan string) {
+	for x := range ch {
+		logger.Println("Send:", x)
+		client.Publish(topic, qos, retained, x)
+	}
+}
 
 func mqttTran(client mqtt.Client, logger *log.Logger, topic_prefix string, ch chan string) {
 	for x := range ch {

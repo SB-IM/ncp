@@ -17,23 +17,6 @@ import (
   mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func mqttRecv(client mqtt.Client, topic string, qos byte, ch chan string) {
-  logger := log.New(os.Stdout, "[Mqtt recv] ", log.LstdFlags)
-  client.Subscribe(topic, qos, func(client mqtt.Client, msg mqtt.Message) {
-    m := string(msg.Payload())
-    logger.Println(m)
-      ch <- m
-  })
-}
-
-func mqttSend(client mqtt.Client, topic string, qos byte, retained bool, ch chan string) {
-  logger := log.New(os.Stdout, "[Mqtt Send] ", log.LstdFlags)
-  for x := range ch {
-    logger.Println(x)
-    client.Publish(topic, qos, retained, x)
-  }
-}
-
 type OnStatus struct {
   Code int `json:"code"`
   Msg string `json:"msg"`
@@ -93,13 +76,9 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
     ch_rpc_recv: ch_mqtt_i,
   }
 
-  //client := connect("node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status", input)
-  mqtt.Connect(n.Status, "node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
-  //go mqttRecv(client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/send", 2, input)
-  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, true, ch_mqtt_o)
 
-	ch_mqtt_message := make(chan string, 100)
-  go mqttSend(mqtt.client, "nodes/" + strconv.Itoa(server.Id) + "/message", 0, true, ch_mqtt_message)
+	mqtt.Connect(n.Status, logGroup.Get("mqtt"), "node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
+	go mqttSend(mqtt.client, logGroup.Get("mqtt"), "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, true, ch_mqtt_o)
 
 	ch_mqtt_msg := make(chan string, 100)
 	go mqttTran(mqtt.client, log.New(os.Stdout, "[Mqtt Tran] ", log.LstdFlags), "nodes/" + strconv.Itoa(server.Id), ch_mqtt_msg)
@@ -166,7 +145,7 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
 				}
 
 				go func() {
-					res, err := callback([]byte(syncMqttRpc(mqtt.client, server.Link_id, string(req))))
+					res, err := callback([]byte(syncMqttRpc(mqtt.client, logGroup.Get("mqtt"), server.Link_id, string(req))))
 					if err != nil {
 						fmt.Println(err)
 					}
