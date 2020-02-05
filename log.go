@@ -24,11 +24,15 @@ func logGroupNew(config *ConfigLog) (*LogGroup, error) {
 	}
 
 	for k, v := range config.Type {
-		logfile, err := os.OpenFile(config.Path+config.Type[v]+".log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return logGroup, err
+		if config.Env == "development" {
+			logGroup.logs[k] = log.New(os.Stdout, "[DEV: "+k+"] ", log.LstdFlags)
+		} else {
+			logfile, err := os.OpenFile(config.Path+config.Type[v]+".log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				return logGroup, err
+			}
+			logGroup.logs[k] = log.New(logfile, "["+k+"] ", log.LstdFlags)
 		}
-		logGroup.logs[k] = log.New(logfile, "["+k+"] ", log.LstdFlags)
 	}
 	return logGroup, nil
 }

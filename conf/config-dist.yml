@@ -8,12 +8,20 @@ server:
   tcps: "localhost:1208"
   tran: "localhost:1122"
 
-# production, development
-#env: "production"
-env: "development"
-
-# :debug < :info < :warn < :error < :fatal < :unknown
-log_level: "info"
+log:
+  # production: Log output type[xxx] file, development: Log output os.Stdout
+  env: "development"
+  path: "log/"
+  # :debug < :info < :warn < :error < :fatal < :unknown
+  # TODO
+  # level Not Implement
+  level: "info"
+  type:
+    core: "core"
+    tcpc: "client"
+    tcps: "server"
+    tran: "tran"
+    mqtt: "mqtt"
 
 ncp:
   webrtc:
