@@ -85,11 +85,14 @@ func (this *SocketServer) recv(conn *net.Conn, output chan string) {
 			break
 		}
 		msg := strings.TrimSpace(string(buf[0:cnt]))
-		methods, ok := getReg([]byte(msg))
-		if ok {
+		methods, result := getReg([]byte(msg))
+		if len(methods) != 0 {
 			link.methods = methods
 			this.addLink(link)
 			this.logger.Println("Method Reg:", conn, methods)
+			if result != "" {
+				(*conn).Write([]byte(result + "\n"))
+			}
 		} else {
 			this.logger.Println("Recv:", conn, msg)
 			output <- msg

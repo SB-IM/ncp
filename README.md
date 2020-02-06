@@ -36,8 +36,20 @@ socket server | only: jsonrpc 2.0, reg method wait call
 tran | Single status message transmission
 
 #### reg
+##### Notify:
 ```json
-{"jsonrpc": "2.0", "method": "reg", "params": ["webrtc", "webrtc_close"], "id": 1}
+{"jsonrpc": "2.0", "method": "reg", "params": ["webrtc", "webrtc_close"]}
+```
+
+##### Request:
+```
+--> {"jsonrpc": "2.0", "method": "reg", "params": ["webrtc", "webrtc_close"], "id": 1}
+
+<-- {"jsonrpc": "2.0", "result": ["webrtc", "webrtc_close"], "id": 1}
+
+--> {"jsonrpc":"2.0","id":"test.0-00000000","method":"reg","params":["status", "webrtc"]}
+
+<-- {"jsonrpc":"2.0","result":["status","webrtc"],"id":"test.0-00000000"}
 ```
 
 #### tran

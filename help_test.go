@@ -204,13 +204,36 @@ func Test_detachTran_multiple(t *testing.T) {
 func Test_getReg(t *testing.T) {
 	reg := `{"jsonrpc":"2.0","id":"test.0-00000000","method":"reg","params":["status", "webrtc"]}`
 
-	methods, ok := getReg([]byte(reg))
+	methods, str := getReg([]byte(reg))
 
-	if !ok {
+	if len(methods) == 0 {
 		t.Errorf("Not Reg")
 		for _, method := range methods {
 			t.Errorf(method)
 		}
+	}
+
+	result := `{"jsonrpc":"2.0","result":["status","webrtc"],"id":"test.0-00000000"}`
+	if str != result {
+		t.Errorf("Not Request")
+	}
+}
+
+func Test_getRegNotify(t *testing.T) {
+	reg := `{"jsonrpc":"2.0","method":"reg","params":["status", "webrtc"]}`
+
+	methods, str := getReg([]byte(reg))
+
+	if len(methods) == 0 {
+		t.Errorf("Not Reg")
+		for _, method := range methods {
+			t.Errorf(method)
+		}
+	}
+
+	result := ""
+	if str != result {
+		t.Errorf("Not Request")
 	}
 }
 

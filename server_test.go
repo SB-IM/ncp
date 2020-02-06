@@ -138,10 +138,10 @@ func Test_SocketServerRecv(t *testing.T) {
 	output := make(chan string)
 	go socketServer.recv(&server, output)
 
-	reg_request := `{"jsonrpc":"2.0","id":"test.0-00000000","method":"reg","params":["test", "status", "webrtc"]}`
+	reg_notify := `{"jsonrpc":"2.0","method":"reg","params":["test", "status", "webrtc"]}`
 	test_msg := `{"test":"233"}`
 
-	client.Write([]byte(reg_request + "\n"))
+	client.Write([]byte(reg_notify + "\n"))
 	client.Write([]byte(test_msg + "\n"))
 
 	if test_msg != <-output {
@@ -153,6 +153,37 @@ func Test_SocketServerRecv(t *testing.T) {
 				t.Errorf(method)
 			}
 		}
+	}
+}
+
+func Test_SocketServerRecvReg(t *testing.T) {
+	server, client := net.Pipe()
+	socketServer := &SocketServer{
+		logger: fakeLogger(),
+	}
+
+	output := make(chan string)
+	reg_request := `{"jsonrpc":"2.0","id":"test.0-00000000","method":"reg","params":["test", "status", "webrtc"]}`
+	reg_result := `{"jsonrpc":"2.0","result":["test","status","webrtc"],"id":"test.0-00000000"}`
+
+	no_output := make(chan string)
+	go socketServer.recv(&server, no_output)
+
+	go func() {
+		buf := make([]byte, 4096)
+		cnt, err := client.Read(buf)
+		if err != nil || cnt == 0 {
+			t.Errorf("IO error")
+		}
+		output <- strings.TrimSpace(string(buf[0:cnt]))
+	}()
+
+	client.Write([]byte(reg_request + "\n"))
+	result := <-output
+
+	if result != reg_result {
+		t.Errorf("Result Not Match")
+		t.Errorf(result)
 	}
 }
 
