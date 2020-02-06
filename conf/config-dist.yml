@@ -22,6 +22,7 @@ log:
     tcps: "server"
     tran: "tran"
     mqtt: "mqtt"
+    mqtr: "mqtt_tran"
 
 ncp:
   webrtc:

@@ -81,7 +81,7 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
 	go mqttSend(mqtt.client, logGroup.Get("mqtt"), "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, true, ch_mqtt_o)
 
 	ch_mqtt_msg := make(chan string, 100)
-	go mqttTran(mqtt.client, log.New(os.Stdout, "[Mqtt Tran] ", log.LstdFlags), "nodes/" + strconv.Itoa(server.Id), ch_mqtt_msg)
+	go mqttTran(mqtt.client, logGroup.Get("mqtr"), "nodes/" + strconv.Itoa(server.Id), ch_mqtt_msg)
 
 	defer func() {
 		mqttSetOnline(mqtt.client, n.Status, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
