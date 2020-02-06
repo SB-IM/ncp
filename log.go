@@ -27,7 +27,7 @@ func logGroupNew(config *ConfigLog) (*LogGroup, error) {
 		if config.Env == "development" {
 			logGroup.logs[k] = log.New(os.Stdout, "[DEV: "+k+"] ", log.LstdFlags)
 		} else {
-			logfile, err := os.OpenFile(config.Path+config.Type[v]+".log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			logfile, err := os.OpenFile(config.Path+v+".log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				return logGroup, err
 			}
