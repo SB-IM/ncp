@@ -27,10 +27,12 @@ func (this *SocketClient) record(raw []byte) {
 		return
 	}
 
-	run_rpc := jsonrpc2.Jsonrpc{}
-	json.Unmarshal(*(this.running), &run_rpc)
-	if rpc.ID.String() == run_rpc.ID.String() {
-		this.running = nil
+	if this.running != nil {
+		run_rpc := jsonrpc2.Jsonrpc{}
+		json.Unmarshal(*(this.running), &run_rpc)
+		if rpc.ID.String() == run_rpc.ID.String() {
+			this.running = nil
+		}
 	}
 }
 
