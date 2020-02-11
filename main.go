@@ -103,7 +103,10 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
   // Socket Client
   ch_socketc_i := make(chan string, 100)
   ch_socketc := make(chan string, 100)
-	go socketClient(server.Tcpc, logGroup.Get("tcpc"), ch_socketc, ch_socketc_i)
+	socketClient := &SocketClient{
+		logger: logGroup.Get("tcpc"),
+	}
+	go socketClient.Run(server.Tcpc, ch_socketc, ch_socketc_i)
 
 	// Socket Server
 	ch_sockets := make(chan string, 100)

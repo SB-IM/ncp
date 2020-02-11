@@ -1,48 +1,82 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/SB-IM/jsonrpc2"
 )
 
-func socketClient(addr string, logger *log.Logger, input chan string, output chan string) {
+type SocketClient struct {
+	running *[]byte
+	logger  *log.Logger
+}
+
+func (this *SocketClient) record(raw []byte) {
+	rpc := jsonrpc2.Jsonrpc{}
+	err := json.Unmarshal(raw, &rpc)
+	if err != nil || rpc.IsNotify() {
+		return
+	}
+
+	if !rpc.IsResponse() {
+		this.running = &raw
+		return
+	}
+
+	run_rpc := jsonrpc2.Jsonrpc{}
+	json.Unmarshal(*(this.running), &run_rpc)
+	if rpc.ID.String() == run_rpc.ID.String() {
+		this.running = nil
+	}
+}
+
+func (this *SocketClient) Run(addr string, input chan string, output chan string) {
 	for {
 		conn, err := net.Dial("tcp", addr)
 		if err != nil {
 			time.Sleep(3 * time.Second)
 		} else {
-			logger.Println("New connect", &conn)
-			go socketSend(conn, logger, input)
-			socketRecv(conn, logger, output)
-			logger.Println("Connect err try reconnect")
+			this.logger.Println("New connect", &conn)
+
+			if this.running != nil {
+				this.logger.Println("ReSend:", string(*(this.running)))
+				output <- string(*(this.running))
+			}
+			go this.send(conn, input)
+			this.recv(conn, output)
+			this.logger.Println("Connect err try reconnect")
 		}
 	}
 }
 
-func socketRecv(conn net.Conn, logger *log.Logger, ch chan string) {
+func (this *SocketClient) recv(conn net.Conn, ch chan string) {
 	buf := make([]byte, 4096)
 	for {
 		cnt, err := conn.Read(buf)
 		if err != nil || cnt == 0 {
-			logger.Println("Socket close")
+			this.logger.Println("Socket close")
 			conn.Close()
 			break
 		}
 		msg := strings.TrimSpace(string(buf[0:cnt]))
-		logger.Println("Recv:", msg)
+		this.logger.Println("Recv:", msg)
+		this.record([]byte(msg))
 		ch <- msg
 	}
 }
 
-func socketSend(conn net.Conn, logger *log.Logger, ch chan string) {
+func (this *SocketClient) send(conn net.Conn, ch chan string) {
 	for msg := range ch {
-		logger.Println("Send:", msg)
+		this.logger.Println("Send:", msg)
+		this.record([]byte(msg))
 		_, err := conn.Write([]byte(msg + "\n"))
 
 		if err != nil {
-			logger.Println("Error:", err)
+			this.logger.Println("Error:", err)
 			ch <- msg
 			break
 		}
