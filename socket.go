@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"log"
 	"net"
-	"strings"
 	"time"
 
 	"github.com/SB-IM/jsonrpc2"
@@ -56,20 +56,21 @@ func (this *SocketClient) Run(addr string, input chan string, output chan string
 }
 
 func (this *SocketClient) recv(conn net.Conn, ch chan string) {
-	buf := make([]byte, 4096)
+	read := bufio.NewReader(conn)
 	for {
-		cnt, err := conn.Read(buf)
-		if err != nil || cnt == 0 {
+
+		// readLine() on util.go
+		raw, err := readLine(read)
+		if err != nil {
 			this.logger.Println("Socket close")
 			conn.Close()
-			break
+			return
 		}
-		msg := strings.TrimSpace(string(buf[0:cnt]))
-		for _, v := range strings.Split(msg, "\n") {
-			this.logger.Println("Recv:", v)
-			this.record([]byte(v))
-			ch <- v
-		}
+
+		msg := string(raw)
+		this.logger.Println("Recv:", msg)
+		this.record([]byte(msg))
+		ch <- msg
 	}
 }
 
