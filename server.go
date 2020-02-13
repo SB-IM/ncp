@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"log"
 	"net"
-	"strings"
 	"sync"
 )
 
@@ -76,16 +76,16 @@ func (this *SocketServer) recv(conn *net.Conn, output chan string) {
 		this.delLink(link)
 		(*conn).Close()
 	}()
-
-	buf := make([]byte, 4096)
+	read := bufio.NewReader(*conn)
 	for {
-		cnt, err := (*conn).Read(buf)
-		if err != nil || cnt == 0 {
+		// readLine() on util.go
+		raw, err := readLine(read)
+		if err != nil {
 			this.logger.Println("Connect Err:", conn, err)
 			break
 		}
-		msg := strings.TrimSpace(string(buf[0:cnt]))
-		methods, result := getReg([]byte(msg))
+
+		methods, result := getReg(raw)
 		if len(methods) != 0 {
 			link.methods = methods
 			this.addLink(link)
@@ -94,6 +94,7 @@ func (this *SocketServer) recv(conn *net.Conn, output chan string) {
 				(*conn).Write([]byte(result + "\n"))
 			}
 		} else {
+			msg := string(raw)
 			this.logger.Println("Recv:", conn, msg)
 			output <- msg
 		}
