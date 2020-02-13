@@ -65,9 +65,11 @@ func (this *SocketClient) recv(conn net.Conn, ch chan string) {
 			break
 		}
 		msg := strings.TrimSpace(string(buf[0:cnt]))
-		this.logger.Println("Recv:", msg)
-		this.record([]byte(msg))
-		ch <- msg
+		for _, v := range strings.Split(msg, "\n") {
+			this.logger.Println("Recv:", v)
+			this.record([]byte(v))
+			ch <- v
+		}
 	}
 }
 
