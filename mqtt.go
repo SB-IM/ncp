@@ -114,7 +114,7 @@ func mqttTran(client mqtt.Client, logger *log.Logger, topic_prefix string, ch ch
 		dataMap := detachTran([]byte(x))
 		for k, v := range dataMap {
 			logger.Println(k + " --> " + string(v))
-			client.Publish(topic_prefix + "/msg/" + k, 0, false, string(v))
+			client.Publish(topic_prefix + "/msg/" + k, 0, true, string(v))
 		}
 	}
 }
