@@ -62,7 +62,10 @@ func (this *SocketServer) send(input chan string) {
 	for msg := range input {
 		for _, conn := range this.getMethodMatchConns(getJSONRPC(msg).Method) {
 			this.logger.Println("Send:", conn, msg)
-			(*conn).Write([]byte(msg + "\n"))
+			n, err := (*conn).Write([]byte(msg + "\n"))
+			if err != nil {
+				this.logger.Println("Write Err:", conn, n, err)
+			}
 		}
 	}
 }
