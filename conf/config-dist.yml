@@ -48,9 +48,9 @@ ncp:
   status:
     link_id: 2
     position_ok: true
-    lat: "22.0000100001"
-    lng: "144.0000100001"
-    alt: "10088.0001"
+    lat: "22.6876423001"
+    lng: "114.2248673001"
+    alt: "80.0001"
 #  shell:
 #    path: "scripts/"
 #    prefix: "sh"
