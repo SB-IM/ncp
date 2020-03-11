@@ -178,7 +178,9 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
     case isJSONRPCRecv(x):
       ch_mqtt_o <- x
     case isJSONRPCSend(x):
-      ch_socketc <- x
+			if !isWebrtc(x) {
+				ch_socketc <- x
+			}
       ch_sockets <- x
     default:
       //ch_mqtt_message <- x

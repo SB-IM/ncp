@@ -74,10 +74,20 @@ func isNcp(s string) bool {
 	method := getJSONRPC(s).Method
 	isncp := false
 
-	for _, m:= range []string{"ncp", "status", "upload", "download", "shell", "webrtc"} {
+	for _, m:= range []string{"ncp", "status", "upload", "download", "shell"} {
 		if method == m { isncp = true }
 	}
   return isJSONRPCSend(s) && isncp
+}
+
+func isWebrtc(s string) bool {
+	method := getJSONRPC(s).Method
+	isncp := false
+
+	for _, m:= range []string{"webrtc", "webrtc2", "webrtc3"} {
+		if method == m { isncp = true }
+	}
+	return isJSONRPCSend(s) && isncp
 }
 
 func isLink(s string) bool {
