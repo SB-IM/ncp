@@ -6,13 +6,10 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"regexp"
-
-	//"light"
 )
 
 type NcpCmd struct {
 	config Ncp
-	//webrtc light.Star
 }
 
 func (this *NcpCmd) Init() (*NcpCmd, error) {
@@ -69,7 +66,3 @@ func (this *NcpCmd) Shell(command string) ([]byte, error) {
 	return []byte(""), nil
 }
 
-func (this *NcpCmd) Webrtc(raw []byte) ([]byte, error) {
-	return []byte(""), errors.New("No Webrtc")
-	//return *(this.webrtc.Light(&(*this).config.Webrtc.Iceserver, (*this).config.Webrtc.Driver, (*this).config.Webrtc.Args, &raw)), nil
-}

@@ -24,11 +24,6 @@ type Ncp struct {
   }
   Download map[string]string
   Upload map[string]string
-  Webrtc struct {
-		//Iceserver []webrtc.ICEServer
-		Driver string
-    Args string
-  }
   Status
   Shell struct {
     Path string

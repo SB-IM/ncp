@@ -10,8 +10,6 @@ import (
   "os"
   "os/signal"
   "time"
-	"regexp"
-  //"strings"
   "reflect"
 
   mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -193,10 +191,7 @@ func ncpCmd(ncp *NcpCmd, raw string) string {
 	rpc := getJSONRPC(raw)
   results := CallObjectMethod(ncp, Ucfirst("status"))
 
-	if regexp.MustCompile(`^\{.*\}$`).MatchString(string(*rpc.Params)) {
-		results = CallObjectMethod(ncp, Ucfirst("webrtc"), *rpc.Params)
-
-	} else if rpc.Method == "ncp" {
+	if rpc.Method == "ncp" {
 		fmt.Println(string(*rpc.Params))
 
 		var params []string
