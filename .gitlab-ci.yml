@@ -1,9 +1,23 @@
 image: golang:1.13.1-buster
 
-test:
+go1.13:
+  image: golang:1.13-buster
   before_script:
-  script:
     - go version
+  script:
+    - make dep
+    - make build
+    - make test
+  only:
+    refs:
+      - master
+      - dev
+
+go1.14:
+  image: golang:1.14-buster
+  before_script:
+    - go version
+  script:
     - make dep
     - make build
     - make test
