@@ -6,10 +6,15 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"regexp"
+	"strconv"
+	"strings"
+
+	"sb.im/ncp/history"
 )
 
 type NcpCmd struct {
-	config Ncp
+	config  Ncp
+	history *history.Archive
 }
 
 func (this *NcpCmd) Init() (*NcpCmd, error) {
@@ -66,3 +71,26 @@ func (this *NcpCmd) Shell(command string) ([]byte, error) {
 	return []byte(""), nil
 }
 
+func (this *NcpCmd) History(raw []byte) ([]byte, error) {
+	type Params struct {
+		Topic string `json:"topic"`
+		Time  string `json:"time"`
+	}
+	params := &Params{}
+	err := json.Unmarshal(raw, params)
+	if err != nil {
+		return []byte(""), errors.New("Params Error")
+	}
+
+	if this.history == nil {
+		return []byte(""), errors.New("History point is nil")
+	} else {
+		historys := this.history.GetLatestHistorys(strings.Split(params.Topic, "/")[1], params.Time)
+		results := make(map[string]json.RawMessage, len(historys))
+		for _, h := range historys {
+			results[strconv.FormatInt(h.Time.Unix(), 10)] = json.RawMessage(h.Data)
+		}
+		return json.Marshal(results)
+	}
+	return json.Marshal(params)
+}

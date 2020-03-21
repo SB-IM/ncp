@@ -6,6 +6,8 @@ import (
   "strconv"
   "net/url"
 
+	"sb.im/ncp/history"
+
   mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -109,12 +111,14 @@ func mqttSend(client mqtt.Client, logger *log.Logger, topic string, qos byte, re
 	}
 }
 
-func mqttTran(client mqtt.Client, logger *log.Logger, topic_prefix string, ch chan string) {
+func mqttTran(archive *history.Archive, client mqtt.Client, logger *log.Logger, topic_prefix string, ch chan string) {
 	for x := range ch {
 		dataMap := detachTran([]byte(x))
 		for k, v := range dataMap {
-			logger.Println(k + " --> " + string(v))
-			client.Publish(topic_prefix + "/msg/" + k, 0, true, string(v))
+			if archive.FilterAdd(k, v) {
+				logger.Println(k + " --> " + string(v))
+				client.Publish(topic_prefix + "/msg/" + k, 0, true, string(v))
+			}
 		}
 	}
 }

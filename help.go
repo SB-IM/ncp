@@ -74,7 +74,7 @@ func isNcp(s string) bool {
 	method := getJSONRPC(s).Method
 	isncp := false
 
-	for _, m:= range []string{"ncp", "status", "upload", "download", "shell"} {
+	for _, m:= range []string{"ncp", "status", "upload", "download", "shell", "history"} {
 		if method == m { isncp = true }
 	}
   return isJSONRPCSend(s) && isncp

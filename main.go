@@ -11,6 +11,9 @@ import (
   "os/signal"
   "time"
   "reflect"
+	"regexp"
+
+	"sb.im/ncp/history"
 
   mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -78,8 +81,9 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
 	mqtt.Connect(n.Status, logGroup.Get("mqtt"), "node-" + strconv.Itoa(server.Id), uri, "nodes/" + strconv.Itoa(server.Id) + "/status")
 	go mqttSend(mqtt.client, logGroup.Get("mqtt"), "nodes/" + strconv.Itoa(server.Id) + "/rpc/recv", 2, true, ch_mqtt_o)
 
+	archive := history.New(100)
 	ch_mqtt_msg := make(chan string, 100)
-	go mqttTran(mqtt.client, logGroup.Get("mqtr"), "nodes/" + strconv.Itoa(server.Id), ch_mqtt_msg)
+	go mqttTran(archive, mqtt.client, logGroup.Get("mqtr"), "nodes/" + strconv.Itoa(server.Id), ch_mqtt_msg)
 
 	defer func() {
 		mqttSetOnline(mqtt.client, n.Status, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
@@ -94,9 +98,11 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
 		}
 	}()
 
-  // Ncp
-  ch_ncp := make(chan string, 100)
-  go ncp(ncpCmd, ch_ncp, input)
+	// Ncp
+	ncpCmd.history = archive
+	fmt.Println(ncpCmd.history)
+	ch_ncp := make(chan string, 100)
+	go ncp(ncpCmd, ch_ncp, input)
 
   // Socket Client
   ch_socketc_i := make(chan string, 100)
@@ -191,7 +197,10 @@ func ncpCmd(ncp *NcpCmd, raw string) string {
 	rpc := getJSONRPC(raw)
   results := CallObjectMethod(ncp, Ucfirst("status"))
 
-	if rpc.Method == "ncp" {
+	if regexp.MustCompile(`^\{.*\}$`).MatchString(string(*rpc.Params)) {
+		results = CallObjectMethod(ncp, Ucfirst("history"), *rpc.Params)
+	} else if rpc.Method == "ncp" {
+		//if rpc.Method == "ncp" {
 		fmt.Println(string(*rpc.Params))
 
 		var params []string
