@@ -11,9 +11,11 @@ import (
   "os/signal"
   "time"
   "reflect"
+	"runtime"
 	"regexp"
 
 	"sb.im/ncp/history"
+	C "sb.im/ncp/constant"
 
   mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -276,7 +278,7 @@ func main() {
 	}
 
 	if *show_version {
-		fmt.Println(version)
+		fmt.Printf("Ncp %s %s %s %s\n", C.Version, runtime.GOOS, runtime.GOARCH, C.BuildTime)
 		return
 	}
 
