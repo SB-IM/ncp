@@ -5,8 +5,7 @@ go1.13:
   before_script:
     - go version
   script:
-    - make dep
-    - make build
+    - make
     - make test
   only:
     refs:
@@ -18,8 +17,7 @@ go1.14:
   before_script:
     - go version
   script:
-    - make dep
-    - make build
+    - make
     - make test
   only:
     refs:
