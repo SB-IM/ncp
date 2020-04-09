@@ -34,11 +34,17 @@ func logGroupNew(config *ConfigLog) (*LogGroup, error) {
 			logGroup.logs[k] = log.New(logfile, "["+k+"] ", log.LstdFlags)
 		}
 	}
+
+	logGroup.logs["default"] = log.New(os.Stdout, "[NO SET] ", log.LstdFlags)
 	return logGroup, nil
 }
 
 func (this *LogGroup) Get(name string) *log.Logger {
-	return this.logs[name]
+	if l := this.logs[name]; l != nil {
+		return l
+	} else {
+		return this.logs["default"]
+	}
 }
 
 func (this *LogGroup) Close() error {

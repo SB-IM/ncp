@@ -19,11 +19,15 @@ func Test_logGroupNew(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	if len(logGroup.logs) != 1 {
+	if len(logGroup.logs) != 2 {
 		t.Errorf("Sum Error")
 	}
 
 	if logGroup.Get("test") == nil {
 		t.Errorf("No Key 'test'")
+	}
+
+	if logGroup.Get("test_nono") == nil {
+		t.Errorf("This log is nil")
 	}
 }
