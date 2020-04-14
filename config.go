@@ -48,9 +48,13 @@ type Config struct {
 }
 
 func getConfig(str string) (Config, error) {
-  config := Config{}
-  configFile, err := ioutil.ReadFile(str)
-  yaml.Unmarshal(configFile, &config)
-  return config, err
+	config := Config{}
+	configFile, err := ioutil.ReadFile(str)
+	if err != nil {
+		return config, err
+	} else {
+		err = yaml.Unmarshal(configFile, &config)
+		return config, err
+	}
 }
 

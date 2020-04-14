@@ -25,7 +25,7 @@ log:
     mqtr: "mqtt_tran"
 
 ncp:
- download:
+  download:
     map: '../map'
   upload:
     map: '../map'
