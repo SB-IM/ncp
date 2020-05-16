@@ -98,6 +98,16 @@ func isLink(s string) bool {
 	}
 }
 
+func isStatus(s string) bool {
+	method := getJSONRPC(s).Method
+	is := false
+
+	for _, m:= range []string{"ncp_online", "ncp_offline"} {
+		if method == m { is = true }
+	}
+	return isJSONRPCSend(s) && is
+}
+
 func linkCall(req []byte, id string) ([]byte, error, func([]byte) ([]byte, error)) {
 	jsonrpc_req := jsonrpc2.WireRequest{}
 	err := json.Unmarshal(req, &jsonrpc_req)

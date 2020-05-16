@@ -178,6 +178,13 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
     //Center.Println(x)
 
     switch {
+		case isStatus(x):
+			if getJSONRPC(x).Method == "ncp_online" {
+				mqttSetOnline(mqtt.client, n.Status, "nodes/" + strconv.Itoa(server.Id) + "/status", "online")
+			} else {
+				// offline
+				mqttSetOnline(mqtt.client, n.Status, "nodes/" + strconv.Itoa(server.Id) + "/status", "offline")
+			}
     case isNcp(x):
       ch_ncp <- x
       ch_sockets <- x
