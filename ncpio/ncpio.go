@@ -27,8 +27,13 @@ type IOServer interface {
 }
 
 func (n *NcpIO) Run(ctx context.Context) {
-	if n.Type == "tcpc" {
-		go NewTcpc(n.Params).Run(ctx)
+	switch n.Type {
+	case "tcpc":
+		n.Conn = NewTcpc(n.Params)
+		go n.Conn.Run(ctx)
+	case "jsonrpc2":
+		n.Conn = NewJsonrpc2(n.Params)
+		go n.Conn.Run(ctx)
 	}
 }
 
@@ -69,8 +74,8 @@ func (n *NcpIO) Put(data []byte) error {
 		}
 
 		if matched {
-			return err
+			return n.Conn.Put(data)
 		}
 	}
-	return n.Conn.Put(data)
+	return errors.New("Not Match")
 }

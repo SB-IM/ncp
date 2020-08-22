@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"time"
 )
@@ -30,8 +31,10 @@ func (t *Tcpc) Run(ctx context.Context) {
 		if err != nil {
 			time.Sleep(3 * time.Second)
 		} else {
+			fmt.Println("New Connect")
+			go t.send(conn, t.input)
 			t.recv(conn, t.output)
-			//this.logger.Println("Connect err try reconnect")
+			fmt.Println("Connect err try reconnect")
 		}
 	}
 }
