@@ -4,6 +4,11 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"time"
+)
+
+const (
+	retryInterval = 3 * time.Second
 )
 
 type NcpIO struct {
@@ -13,6 +18,10 @@ type NcpIO struct {
 	IRules []Rule `json:"i_rules"`
 	ORules []Rule `json:"o_rules"`
 	Conn   IOServer
+	I      chan<- []byte
+	O      <-chan []byte
+	ConnI  chan<- []byte
+	ConnO  <-chan []byte
 }
 
 type Rule struct {
@@ -22,8 +31,10 @@ type Rule struct {
 
 type IOServer interface {
 	Run(context.Context)
+	//Run(context.Context) (chan<- []byte, chan-> []byte)
 	Get() ([]byte, error)
 	Put([]byte) error
+	//I() chan<- []byte
 }
 
 func (n *NcpIO) Run(ctx context.Context) {
