@@ -3,17 +3,18 @@ package ncpio
 import (
 	"context"
 	"encoding/json"
-	"errors"
 
 	"github.com/SB-IM/jsonrpc2"
+	logger "log"
 )
 
 type Jsonrpc2 struct {
 	jsonrpc *jsonrpc2.WireResponse
-	output  chan []byte
+	I       chan<- []byte
+	O       <-chan []byte
 }
 
-func NewJsonrpc2(params string) *Jsonrpc2 {
+func NewJsonrpc2(params string, i chan<- []byte, o <-chan []byte) *Jsonrpc2 {
 	jsonrpc_res := &jsonrpc2.WireResponse{}
 
 	err := json.Unmarshal([]byte(params), jsonrpc_res)
@@ -24,43 +25,44 @@ func NewJsonrpc2(params string) *Jsonrpc2 {
 
 	return &Jsonrpc2{
 		jsonrpc: jsonrpc_res,
-		output:  make(chan []byte, 128),
+		I:       i,
+		O:       o,
 	}
 }
 
-func (t *Jsonrpc2) Run(ctx context.Context) {}
+func (t *Jsonrpc2) Run(ctx context.Context) {
+	t.simulation(ctx)
+}
 
-func (t *Jsonrpc2) Get() ([]byte, error) {
-	select {
-	case data := <-t.output:
-		return data, nil
-	default:
-		return []byte{}, errors.New("Not get")
+func (t *Jsonrpc2) simulation(ctx context.Context) {
+	for {
+		select {
+		case raw := <-t.O:
+			data, err := t.rpcCall(raw)
+			if err != nil {
+				logger.Println(err)
+				continue
+			}
+			if len(data) != 0 {
+				t.I <- data
+			}
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
-func (t *Jsonrpc2) Put(req []byte) error {
+func (t *Jsonrpc2) rpcCall(req []byte) ([]byte, error) {
 	jsonrpc_req := jsonrpc2.WireRequest{}
 	err := json.Unmarshal(req, &jsonrpc_req)
 	if err != nil {
-		return err
+		return []byte{}, err
 	}
 
 	if jsonrpc_req.IsNotify() {
-		return nil
+		return []byte{}, nil
 	}
 
 	t.jsonrpc.ID = jsonrpc_req.ID
-
-	res, err := json.Marshal(t.jsonrpc)
-	if err != nil {
-		return err
-	}
-
-	select {
-	case t.output <- res:
-		return nil
-	default:
-		return errors.New("Not put")
-	}
+	return json.Marshal(t.jsonrpc)
 }
