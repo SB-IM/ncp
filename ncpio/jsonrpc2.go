@@ -10,11 +10,11 @@ import (
 
 type Jsonrpc2 struct {
 	jsonrpc *jsonrpc2.WireResponse
-	I       chan<- []byte
-	O       <-chan []byte
+	I       <-chan []byte
+	O       chan<- []byte
 }
 
-func NewJsonrpc2(params string, i chan<- []byte, o <-chan []byte) *Jsonrpc2 {
+func NewJsonrpc2(params string, i <-chan []byte, o chan<- []byte) *Jsonrpc2 {
 	jsonrpc_res := &jsonrpc2.WireResponse{}
 
 	err := json.Unmarshal([]byte(params), jsonrpc_res)
@@ -37,14 +37,14 @@ func (t *Jsonrpc2) Run(ctx context.Context) {
 func (t *Jsonrpc2) simulation(ctx context.Context) {
 	for {
 		select {
-		case raw := <-t.O:
+		case raw := <-t.I:
 			data, err := t.rpcCall(raw)
 			if err != nil {
 				logger.Println(err)
 				continue
 			}
 			if len(data) != 0 {
-				t.I <- data
+				t.O <- data
 			}
 		case <-ctx.Done():
 			return

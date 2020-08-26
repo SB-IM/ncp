@@ -17,9 +17,9 @@ func TestJsonrpc2(t *testing.T) {
 	o := make(chan []byte)
 	go NewJsonrpc2(params, i, o).Run(ctx)
 
-	o <- []byte(`{"jsonrpc":"2.0","method":"dooropen","params":[]}`)
-	o <- []byte(`{"jsonrpc":"2.0","id":"sdwc.1-1553321035000","method":"dooropen","params":[]}`)
-	data := <-i
+	i <- []byte(`{"jsonrpc":"2.0","method":"dooropen","params":[]}`)
+	i <- []byte(`{"jsonrpc":"2.0","id":"sdwc.1-1553321035000","method":"dooropen","params":[]}`)
+	data := <-o
 
 	j := &jsonrpc2.Jsonrpc{}
 	json.Unmarshal(data, j)
@@ -42,10 +42,10 @@ func TestJsonrpc2Error(t *testing.T) {
 	o := make(chan []byte)
 	go NewJsonrpc2(params, i, o).Run(ctx)
 
-	o <- []byte("233")
-	o <- []byte(params)
-	o <- []byte(`{"jsonrpc":"2.0","id":"sdwc.1-1553321035000","method":"dooropen","params":[]}`)
-	data := <-i
+	i <- []byte("233")
+	i <- []byte(params)
+	i <- []byte(`{"jsonrpc":"2.0","id":"sdwc.1-1553321035000","method":"dooropen","params":[]}`)
+	data := <-o
 
 	j := &jsonrpc2.Jsonrpc{}
 	json.Unmarshal(data, j)
