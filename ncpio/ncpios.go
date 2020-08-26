@@ -2,36 +2,45 @@ package ncpio
 
 import (
 	"context"
-	"fmt"
-	"time"
 )
 
 type NcpIOs struct {
 	IO []*NcpIO
 }
 
-func (n *NcpIOs) Run(ctx context.Context) {
-	for _, io := range n.IO {
-		io.Run(ctx)
+func NewNcpIOs(configs []Config) *NcpIOs {
+	ncps := make([]*NcpIO, len(configs))
+	for index, config := range configs {
+		ncps[index] = NewNcpIO(&config)
 	}
-	time.Sleep(3 * time.Second)
+	return &NcpIOs{
+		IO: ncps,
+	}
+}
 
-	for {
-		for _, g_io := range n.IO {
-			data, err := g_io.Get()
-			if err != nil {
-				continue
-			}
-			fmt.Printf("%s\n", data)
+func (n *NcpIOs) Run(ctx context.Context) {
+	hub := make(chan []byte, ioChannelBuffering)
 
-			for _, p_io := range n.IO {
-				err := p_io.Put(data)
-				if err != nil {
-					fmt.Println(err)
+	for _, io := range n.IO {
+		go io.Run(ctx)
+		go func(ncpio *NcpIO) {
+			for data := range ncpio.IO.O {
+				if !Filter(ncpio.ORules, data) {
+					hub <- data
 				}
 			}
+		}(io)
+	}
 
+	for data := range hub {
+		for _, io := range n.IO {
+			if Filter(io.IRules, data) {
+				continue
+			}
+			select {
+			case io.IO.I <- data:
+			default:
+			}
 		}
-		time.Sleep(1 * time.Millisecond)
 	}
 }
