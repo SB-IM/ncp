@@ -23,7 +23,14 @@ install:
 	install -Dm644 conf/config-dist.yml -t ${PROFIX}/etc/ncp/
 
 test:
-	go test -cover
+	go test ./... -cover -v
+
+# \(statements\)(?:\s+)?(\d+(?:\.\d+)?%)
+# https://stackoverflow.com/questions/61246686/go-coverage-over-multiple-package-and-gitlab-coverage-badge
+cover:
+	go test ./... -coverprofile profile.cov
+	go tool cover -func profile.cov
+	@rm profile.cov
 
 clean:
 	go clean

@@ -5,7 +5,7 @@ image: golang:1.13.1-buster
     - go version
   script:
     - make
-    - make test
+    - make cover
   only:
     refs:
       - master
