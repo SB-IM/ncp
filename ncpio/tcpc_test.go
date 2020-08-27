@@ -75,23 +75,23 @@ func TestTcpc(t *testing.T) {
 	defer cancel()
 	go tcpc.Run(ctx)
 
-	if msg := <-i; string(msg) != test_1 {
+	if msg := <-o; string(msg) != test_1 {
 		t.Errorf("%s\n", msg)
 	}
-	if msg := <-i; string(msg) != test_2 {
+	if msg := <-o; string(msg) != test_2 {
 		t.Errorf("%s\n", msg)
 	}
 
-	o <- []byte(test_1)
-	o <- []byte(test_2)
+	i <- []byte(test_1)
+	i <- []byte(test_2)
 
 	<-sign
 
-	for i := 0; i <= l; i++ {
-		o <- []byte(test_1)
+	for ii := 0; ii <= l; ii++ {
+		i <- []byte(test_1)
 	}
 	<-sign
-	if msg := <-i; string(msg) != test_1 {
+	if msg := <-o; string(msg) != test_1 {
 		t.Errorf("%s\n", msg)
 	}
 	<-sign

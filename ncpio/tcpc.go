@@ -19,11 +19,11 @@ type Tcpc struct {
 	mu_r   sync.Mutex
 	ctx    context.Context
 	cancel context.CancelFunc
-	I      chan<- []byte
-	O      <-chan []byte
+	I      <-chan []byte
+	O      chan<- []byte
 }
 
-func NewTcpc(addr string, i chan<- []byte, o <-chan []byte) *Tcpc {
+func NewTcpc(addr string, i <-chan []byte, o chan<- []byte) *Tcpc {
 	return &Tcpc{
 		addr: addr,
 		I:    i,
@@ -67,7 +67,7 @@ func (t *Tcpc) send(conn net.Conn) {
 
 	for {
 		select {
-		case data := <-t.O:
+		case data := <-t.I:
 			_, err := conn.Write(append(data, "\n"...))
 
 			if err != nil {
@@ -93,7 +93,7 @@ func (t *Tcpc) recv(conn net.Conn) {
 			t.cancel()
 			return
 		}
-		t.I <- data
+		t.O <- data
 	}
 }
 
