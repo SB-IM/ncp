@@ -25,7 +25,7 @@ func (n *NcpIOs) Run(ctx context.Context) {
 		go io.Run(ctx)
 		go func(ncpio *NcpIO) {
 			for data := range ncpio.IO.O {
-				if !Filter(ncpio.ORules, data) {
+				if Filter(ncpio.ORules, data) {
 					hub <- data
 				}
 			}
@@ -34,7 +34,7 @@ func (n *NcpIOs) Run(ctx context.Context) {
 
 	for data := range hub {
 		for _, io := range n.IO {
-			if Filter(io.IRules, data) {
+			if !Filter(io.IRules, data) {
 				continue
 			}
 			select {

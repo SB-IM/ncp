@@ -12,6 +12,9 @@ func TestNcpIOs(t *testing.T) {
 			Type:   "api",
 			Params: "233",
 			IRules: []Rule{
+				Rule{`.*"result".*`, false},
+			},
+			ORules: []Rule{
 				Rule{`.*"result".*`, true},
 			},
 		},
@@ -19,6 +22,10 @@ func TestNcpIOs(t *testing.T) {
 			Type:   "jsonrpc2",
 			Params: "233",
 			IRules: []Rule{
+				//Rule{`.*"result".*`, true},
+				Rule{`.*`, false},
+			},
+			ORules: []Rule{
 				Rule{`.*"result".*`, false},
 			},
 		},

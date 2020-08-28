@@ -13,15 +13,34 @@ ncpio:
   - type: api
     i_rules:
       - regexp: '.*'
+        invert: true
     o_rules:
       - regexp: '.*'
+        invert: true
   - type: jsonrpc2
     params: "233"
     i_rules:
       - regexp: '.*'
+        invert: true
     o_rules:
       - regexp: '.*'
-        #invert: true
+        invert: true
+
+# JSONRPC 2.0 simulation
+# ncpio:
+#   - type: api
+#     i_rules:
+#       - regexp: '.*"method".*'
+#         invert: true
+#     o_rules:
+#       - regexp: '.*"method".*'
+#   - type: jsonrpc2
+#     params: "233"
+#     i_rules:
+#       - regexp: '.*"method".*'
+#     o_rules:
+#       - regexp: '.*"method".*'
+#         invert: true
 
 log:
   # production: Log output type[xxx] file, development: Log output os.Stdout
