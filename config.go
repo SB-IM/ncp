@@ -3,6 +3,8 @@ package main
 import (
   "io/ioutil"
 
+	"sb.im/ncp/ncpio"
+
 	//"github.com/pion/webrtc/v2"
   yaml "gopkg.in/yaml.v2"
 )
@@ -42,6 +44,7 @@ type Status struct {
 
 type Config struct {
 	Server
+	NcpIO []ncpio.Config `json:"ncpio"`
 	Env string
 	Log ConfigLog
 	Ncp

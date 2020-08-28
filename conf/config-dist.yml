@@ -8,6 +8,21 @@ server:
   tcps: "localhost:1208"
   tran: "localhost:1122"
 
+ncpio:
+  # tcps / tcpc / mqtt / history / logger / jsonrpc2 / build-in / api
+  - type: api
+    i_rules:
+      - regexp: '.*'
+    o_rules:
+      - regexp: '.*'
+  - type: jsonrpc2
+    params: "233"
+    i_rules:
+      - regexp: '.*'
+    o_rules:
+      - regexp: '.*'
+        #invert: true
+
 log:
   # production: Log output type[xxx] file, development: Log output os.Stdout
   env: "development"

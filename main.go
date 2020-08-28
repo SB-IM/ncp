@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
   "fmt"
   "log"
@@ -14,6 +15,7 @@ import (
 	"runtime"
 	"regexp"
 
+	"sb.im/ncp/ncpio"
 	"sb.im/ncp/history"
 	C "sb.im/ncp/constant"
 
@@ -54,7 +56,7 @@ func ncp(ncp *NcpCmd, input chan string, output chan string) {
   }
 }
 
-func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_log *ConfigLog) {
+func msgCenter(s chan os.Signal, server Server, ncpioConfig *[]ncpio.Config, ncpCmd *NcpCmd, n Ncp, config_log *ConfigLog) {
 	logGroup, err := logGroupNew(config_log)
 	if err != nil {
 		log.Fatal(err)
@@ -133,6 +135,12 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
 	rpc_run := RpcRun{}
 	Filter := log.New(os.Stdout, "[Filter] ", log.LstdFlags)
 
+	ncpios := ncpio.NewNcpIOs(*ncpioConfig)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go ncpios.Run(ctx)
+	time.Sleep(3 * time.Millisecond)
+
   for {
     select {
     case x = <- ch_mqtt_i:
@@ -165,6 +173,8 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
 				x = ""
 			}
 
+		case raw := <-ncpio.O:
+			x = string(raw)
     case x = <- input:
       //fmt.Println("Recvice", x)
 		case sig := <- s:
@@ -176,6 +186,7 @@ func msgCenter(s chan os.Signal, server Server, ncpCmd *NcpCmd, n Ncp, config_lo
     if x == "" { continue }
 
     //Center.Println(x)
+    ncpio.I <- []byte(x)
 
     switch {
 		case isStatus(x):
@@ -316,6 +327,6 @@ func main() {
   c := make(chan os.Signal, 1)
   signal.Notify(c, os.Interrupt)
 
-	msgCenter(c, config.Server, &ncpCmd, config.Ncp, &config.Log)
+	msgCenter(c, config.Server, &config.NcpIO, &ncpCmd, config.Ncp, &config.Log)
 }
 
