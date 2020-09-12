@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 # nvidia nano GPIO
 
 echo Stop GPIO initial.
