@@ -2,6 +2,7 @@ package ncpio
 
 import (
 	"context"
+	"strconv"
 	"time"
 )
 
@@ -11,6 +12,7 @@ const (
 )
 
 type NcpIO struct {
+	Name   string
 	IRules []Rule `json:"i_rules"`
 	ORules []Rule `json:"o_rules"`
 	Run    func(context.Context)
@@ -23,6 +25,7 @@ type IO struct {
 }
 
 type Config struct {
+	Name string `json:"name" yaml:"name"`
 	// tcps / tcpc / mqtt / history / logger / jsonrpc2 / build-in / api
 	Type   string `json:"type" yaml:"type"`
 	Params string `json:"params" yaml:"params"`
@@ -30,7 +33,7 @@ type Config struct {
 	ORules []Rule `json:"o_rules" yaml:"o_rules"`
 }
 
-func NewNcpIO(config *Config) *NcpIO {
+func NewNcpIO(id int, config *Config) *NcpIO {
 	i := make(chan []byte, ioChannelBuffering)
 	o := make(chan []byte, ioChannelBuffering)
 
@@ -47,7 +50,15 @@ func NewNcpIO(config *Config) *NcpIO {
 		}
 	}()
 
+	// If name no set, Use the default
+	// default: Config Array index
+	name := strconv.Itoa(id)
+	if config.Name != "" {
+		name = config.Name
+	}
+
 	return &NcpIO{
+		Name:   name,
 		IRules: config.IRules,
 		ORules: config.ORules,
 		Run:    run,
