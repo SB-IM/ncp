@@ -16,13 +16,8 @@ func Filter(rules []Rule, data []byte) bool {
 			continue
 		}
 
-		// Invert result
-		if rule.Invert {
-			matched = !matched
-		}
-
 		if matched {
-			return true
+			return !rule.Invert
 		}
 	}
 	return false
