@@ -203,7 +203,11 @@ func msgCenter(s chan os.Signal, server Server, ncpioConfig *[]ncpio.Config, ncp
       ch_mqtt_o <- x
     case isJSONRPCSend(x):
 			if !isWebrtc(x) {
-				ch_socketc <- x
+				select {
+				case ch_socketc <- x:
+				default:
+					fmt.Println("Drop Message", x)
+				}
 			}
       ch_sockets <- x
     default:
