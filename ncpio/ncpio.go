@@ -43,6 +43,8 @@ func NewNcpIO(id int, config *Config) *NcpIO {
 			return NewApi(config.Params, i, o).Run
 		case "tcpc":
 			return NewTcpc(config.Params, i, o).Run
+		case "tcps":
+			return NewTcpc(config.Params, i, o).Listen
 		case "jsonrpc2":
 			return NewJsonrpc2(config.Params, i, o).Run
 		default:
