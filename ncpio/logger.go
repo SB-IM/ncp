@@ -2,8 +2,11 @@ package ncpio
 
 import (
 	"context"
+	"io"
 	"log"
 	"os"
+
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 )
 
 type Logger struct {
@@ -14,7 +17,16 @@ type Logger struct {
 
 func NewLogger(params string, i <-chan []byte, o chan<- []byte) *Logger {
 	prefix := ""
-	out, err := os.OpenFile(params, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	var out io.Writer
+	out, err := rotatelogs.New(
+		params+".%Y%m%d%H%M",
+		rotatelogs.WithLinkName(params),
+		// Max 128M
+		rotatelogs.WithRotationSize(128*1024*1024),
+		rotatelogs.WithRotationCount(8),
+	)
+
 	if err != nil {
 		out = os.Stdout
 		prefix = "NCPIO: "
