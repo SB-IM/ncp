@@ -31,6 +31,11 @@ ncpio:
       - regexp: '.*"method".*'
     o_rules:
       - regexp: '.*'
+  - type: logger
+    params: "log/test.log"
+    i_rules:
+      - regexp: '.*'
+
 
 # JSONRPC 2.0 simulation
 # ncpio:
