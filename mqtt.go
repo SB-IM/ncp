@@ -18,6 +18,7 @@ func setUri(uri *url.URL) *mqtt.ClientOptions {
   opts.SetUsername(uri.User.Username())
   password, _ := uri.User.Password()
   opts.SetPassword(password)
+  opts.SetCleanSession(false)
   return opts
 }
 
