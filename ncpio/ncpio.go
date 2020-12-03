@@ -41,6 +41,8 @@ func NewNcpIO(id int, config *Config) *NcpIO {
 		switch config.Type {
 		case "api":
 			return NewApi(config.Params, i, o).Run
+		case "mqtt":
+			return NewMqtt(config.Params, i, o).Run
 		case "tcpc":
 			return NewTcpc(config.Params, i, o).Run
 		case "tcps":
