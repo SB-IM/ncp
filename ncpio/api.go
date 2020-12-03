@@ -18,9 +18,12 @@ type Api struct {
 	O chan<- []byte
 }
 
-func NewApi(params string, i <-chan []byte, o chan<- []byte) *Api {
+func init() {
 	I = make(chan []byte, apiChannelBuffering)
 	O = make(chan []byte, apiChannelBuffering)
+}
+
+func NewApi(params string, i <-chan []byte, o chan<- []byte) *Api {
 	return &Api{
 		I: i,
 		O: o,
