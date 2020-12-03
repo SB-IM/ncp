@@ -142,16 +142,6 @@ func linkCall(req []byte, id string) ([]byte, error, func([]byte) ([]byte, error
 	return jsonrpc, err, callback
 }
 
-func detachTran(raw []byte) (map[string][]byte) {
-	srcMap := make(map[string]*json.RawMessage)
-	dstMap := make(map[string][]byte)
-	json.Unmarshal(raw, &srcMap)
-	for k, v := range srcMap {
-		dstMap[k], _ = v.MarshalJSON()
-	}
-	return dstMap
-}
-
 func getReg(raw []byte) ([]string, string) {
 	var params []string
 	jsonrpc_req := jsonrpc2.WireRequest{}

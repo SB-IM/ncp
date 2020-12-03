@@ -6,6 +6,7 @@ import (
   "strconv"
   "net/url"
 
+	"sb.im/ncp/util"
 	"sb.im/ncp/history"
 
   mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -114,7 +115,7 @@ func mqttSend(client mqtt.Client, logger *log.Logger, topic string, qos byte, re
 
 func mqttTran(archive *history.Archive, client mqtt.Client, logger *log.Logger, topic_prefix string, ch chan string) {
 	for x := range ch {
-		dataMap := detachTran([]byte(x))
+		dataMap := util.DetachTran([]byte(x))
 		for k, v := range dataMap {
 			if archive.FilterAdd(k, v) {
 				logger.Println(k + " --> " + string(v))
