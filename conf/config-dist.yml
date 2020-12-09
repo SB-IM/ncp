@@ -14,8 +14,8 @@ mqttd:
   #broker: "mqtt://admin:public@mqtt.sblab.xyz:1883"
   broker: "mqtt://admin:public@localhost:1883"
   rpc :
-    i: "nodes/%d/recv"
-    o: "nodes/%d/send"
+    i: "nodes/%d/rpc/recv"
+    o: "nodes/%d/rpc/send"
   gtran:
     prefix: "nodes/%d/msg/%s"
   trans:
@@ -48,6 +48,12 @@ ncpio:
     params: "localhost:1222"
     i_rules:
       - regexp: '.*"method".*'
+    o_rules:
+      - regexp: '.*'
+  - type: mqtt
+    params: "config.yml"
+    i_rules:
+      - regexp: '.*'
     o_rules:
       - regexp: '.*'
   - type: logger

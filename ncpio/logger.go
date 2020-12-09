@@ -19,18 +19,24 @@ func NewLogger(params string, i <-chan []byte, o chan<- []byte) *Logger {
 	prefix := ""
 
 	var out io.Writer
-	out, err := rotatelogs.New(
-		params+".%Y%m%d%H%M",
-		rotatelogs.WithLinkName(params),
-		// Max 128M
-		rotatelogs.WithRotationSize(128*1024*1024),
-		rotatelogs.WithRotationCount(8),
-	)
-
-	if err != nil {
+	var err error
+	if params == "" {
 		out = os.Stdout
-		prefix = "NCPIO: "
+		prefix = "[DEV] NCPIO: "
+	} else {
+		out, err = rotatelogs.New(
+			params+".%Y%m%d%H%M",
+			rotatelogs.WithLinkName(params),
+			// Max 128M
+			rotatelogs.WithRotationSize(128*1024*1024),
+			rotatelogs.WithRotationCount(8),
+		)
+		if err != nil {
+			out = os.Stdout
+			prefix = "NCPIO: "
+		}
 	}
+
 	return &Logger{
 		Log: log.New(out, prefix, log.LstdFlags),
 		I:   i,

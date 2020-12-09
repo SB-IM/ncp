@@ -11,6 +11,8 @@ import (
 	"github.com/SB-IM/jsonrpc-lite"
 	packets "github.com/eclipse/paho.golang/packets"
 	paho "github.com/eclipse/paho.golang/paho"
+
+	logger "log"
 )
 
 type Mqtt struct {
@@ -24,20 +26,21 @@ type Mqtt struct {
 func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 	config, err := loadMqttConfigFromFile(params)
 	if err != nil {
-		fmt.Println(err)
+		logger.Println(err)
 	}
 
 	opt, err := url.Parse(config.Broker)
 	if err != nil {
+		logger.Println(err)
 		return nil
 	}
-	fmt.Printf("%+v\n", config)
+	logger.Printf("%+v\n", config)
 
 	password, _ := opt.User.Password()
 
 	conn, err := net.Dial("tcp", opt.Hostname()+":"+opt.Port())
 	if err != nil {
-		fmt.Println(err)
+		logger.Println(err)
 	}
 	return &Mqtt{
 		I:      i,
@@ -152,7 +155,7 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 }
 
 func (t *Mqtt) Run(ctx context.Context) {
-	defer fmt.Println("MQTT exit")
+	defer logger.Println("MQTT exit")
 	t.Client.Connect(ctx, t.Connect)
 
 	t.Client.Subscribe(context.TODO(), &paho.Subscribe{
@@ -174,12 +177,19 @@ func (t *Mqtt) Run(ctx context.Context) {
 				// {"jsonrpc":"2.0","result":"ok","id":"test.0-1607482556696-0"}
 				// {"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":"test.0-99991607483766.0"}
 
-				//res, err :=
-				t.Client.Publish(context.TODO(), &paho.Publish{
+				res, err := t.Client.Publish(context.TODO(), &paho.Publish{
 					Payload: raw,
 					Topic:   fmt.Sprintf(t.Config.Rpc.I, t.Config.ID),
 					QoS:     '2',
 				})
+
+				if err != nil {
+					logger.Println(err)
+				}
+				if res != nil && res.ReasonCode != packets.PubrecSuccess {
+					logger.Println(err)
+					continue
+				}
 
 			} else if err == nil && (rpc.Type == jsonrpc.TypeRequest || rpc.Type == jsonrpc.TypeNotify) {
 				//fmt.Println("[REQ]: ", string(raw))
@@ -207,11 +217,11 @@ func (t *Mqtt) Run(ctx context.Context) {
 					})
 					// TODO: error log
 					if err != nil {
-						//logger.Println(err)
+						logger.Println(err)
 						continue
 					}
 					if res != nil && res.ReasonCode != packets.PubrecSuccess {
-						//logger.Println(err)
+						logger.Println(err)
 						continue
 					}
 				}
