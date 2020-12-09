@@ -8,6 +8,25 @@ server:
   tcps: "localhost:1208"
   tran: "localhost:1122"
 
+mqttd:
+  id: 1
+  client: "node-%d"
+  #broker: "mqtt://admin:public@mqtt.sblab.xyz:1883"
+  broker: "mqtt://admin:public@localhost:1883"
+  rpc :
+    i: "nodes/%d/recv"
+    o: "nodes/%d/send"
+  gtran:
+    prefix: "nodes/%d/msg/%s"
+  trans:
+    wether:
+      retain: true
+      qos: 0
+    battery:
+      retain: true
+      qos: 0
+
+
 ncpio:
   # tcps / tcpc / mqtt / history / logger / jsonrpc2 / build-in / api
   - type: api

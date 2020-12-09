@@ -8,6 +8,7 @@ import (
 
 	"sb.im/ncp/util"
 
+	"github.com/SB-IM/jsonrpc-lite"
 	packets "github.com/eclipse/paho.golang/packets"
 	paho "github.com/eclipse/paho.golang/paho"
 )
@@ -15,34 +16,45 @@ import (
 type Mqtt struct {
 	Client  *paho.Client
 	Connect *paho.Connect
+	Config  *MqttdConfig
 	I       <-chan []byte
 	O       chan<- []byte
 }
 
 func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
-	opt, err := url.Parse(params)
-	if err != nil {
-		return nil
-	}
-	password, _ := opt.User.Password()
-
-	conn, err := net.Dial("tcp", "localhost:1883")
+	config, err := loadMqttConfigFromFile(params)
 	if err != nil {
 		fmt.Println(err)
 	}
 
+	opt, err := url.Parse(config.Broker)
+	if err != nil {
+		return nil
+	}
+	fmt.Printf("%+v\n", config)
+
+	password, _ := opt.User.Password()
+
+	conn, err := net.Dial("tcp", opt.Hostname()+":"+opt.Port())
+	if err != nil {
+		fmt.Println(err)
+	}
 	return &Mqtt{
-		I: i,
-		O: o,
+		I:      i,
+		O:      o,
+		Config: config,
 		Client: paho.NewClient(paho.ClientConfig{
-			ClientID: "ttttt",
+			ClientID: fmt.Sprint(config.Client, config.ID),
 			Conn:     conn,
+			Router: paho.NewSingleHandlerRouter(func(p *paho.Publish) {
+				o <- p.Payload
+			}),
 		}),
 		Connect: paho.ConnectFromPacketConnect(&packets.Connect{
 			WillMessage: []byte("233"),
 			Password:    []byte(password),
 			Username:    opt.User.Username(),
-			ClientID:    "dev",
+			ClientID:    fmt.Sprintf(config.Client, config.ID),
 			CleanStart:  false,
 			// interval 10s
 			KeepAlive: 10,
@@ -143,33 +155,65 @@ func (t *Mqtt) Run(ctx context.Context) {
 	defer fmt.Println("MQTT exit")
 	t.Client.Connect(ctx, t.Connect)
 
+	t.Client.Subscribe(context.TODO(), &paho.Subscribe{
+		Subscriptions: map[string]paho.SubscribeOptions{
+			fmt.Sprintf(t.Config.Rpc.O, t.Config.ID): paho.SubscribeOptions{
+				QoS: '2',
+				//RetainHandling    byte
+				//NoLocal           bool
+				//RetainAsPublished bool
+			},
+		},
+	})
+
 	for {
 		select {
 		case raw := <-t.I:
-			fmt.Println("SSS:", string(raw))
+			if rpc, err := jsonrpc.Parse(raw); err == nil && (rpc.Type == jsonrpc.TypeSuccess || rpc.Type == jsonrpc.TypeErrors) {
+				//fmt.Println("[RES]: ", string(raw))
+				// {"jsonrpc":"2.0","result":"ok","id":"test.0-1607482556696-0"}
+				// {"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":"test.0-99991607483766.0"}
 
-			for topic, data := range util.DetachTran(raw) {
-				res, err := t.Client.Publish(context.TODO(), &paho.Publish{
-					// TODO: config
-					//Payload    []byte
-					Payload: data,
-					//Topic      string
-					Topic: "test/" + topic,
-					//Properties *Properties
-					//PacketID   uint16
-					//QoS        byte
-					//Duplicate  bool
-					//Retain     bool
-
+				//res, err :=
+				t.Client.Publish(context.TODO(), &paho.Publish{
+					Payload: raw,
+					Topic:   fmt.Sprintf(t.Config.Rpc.I, t.Config.ID),
+					QoS:     '2',
 				})
-				// TODO: error log
-				if err != nil {
-					//logger.Println(err)
-					continue
-				}
-				if res != nil && res.ReasonCode != packets.PubrecSuccess {
-					//logger.Println(err)
-					continue
+
+			} else if err == nil && (rpc.Type == jsonrpc.TypeRequest || rpc.Type == jsonrpc.TypeNotify) {
+				//fmt.Println("[REQ]: ", string(raw))
+				// JSON-RPC Request Ignore
+
+				// {"jsonrpc":"2.0","method":"test","params":[]}
+				// {"jsonrpc":"2.0","id":"test.0-1553321035000","method":"test","params":[]}
+			} else {
+				//fmt.Println("[Tran]: ", string(raw))
+
+				for key, data := range util.DetachTran(raw) {
+					opt, ok := t.Config.Trans[key]
+					if !ok {
+						// TODO: 'opt' use Default
+					}
+					res, err := t.Client.Publish(context.TODO(), &paho.Publish{
+						Payload: data,
+						Topic:   fmt.Sprintf(t.Config.Gtran.Prefix, t.Config.ID, key),
+						QoS:     opt.QoS,
+						Retain:  opt.Retain,
+						//Properties *Properties
+						//PacketID   uint16
+						//Duplicate  bool
+
+					})
+					// TODO: error log
+					if err != nil {
+						//logger.Println(err)
+						continue
+					}
+					if res != nil && res.ReasonCode != packets.PubrecSuccess {
+						//logger.Println(err)
+						continue
+					}
 				}
 			}
 		case <-ctx.Done():
