@@ -2,6 +2,7 @@ package ncpio
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/url"
@@ -161,12 +162,37 @@ func (t *Mqtt) Run(ctx context.Context) {
 	t.Client.Subscribe(context.TODO(), &paho.Subscribe{
 		Subscriptions: map[string]paho.SubscribeOptions{
 			fmt.Sprintf(t.Config.Rpc.O, t.Config.ID): paho.SubscribeOptions{
-				QoS: '2',
+				QoS: 2,
 				//RetainHandling    byte
 				//NoLocal           bool
 				//RetainAsPublished bool
 			},
 		},
+	})
+
+	opt, err := url.Parse(t.Config.Broker)
+	if err != nil {
+		logger.Println(err)
+	}
+
+	go NetworkPing(opt.Hostname(), func(data *NetworkStatus) {
+		raw, err := json.Marshal(data)
+		if err != nil {
+		} else {
+			res, err := t.Client.Publish(context.TODO(), &paho.Publish{
+				Payload: raw,
+				Topic:   fmt.Sprintf(t.Config.Network, t.Config.ID),
+				QoS:     0,
+			})
+
+			if err != nil {
+				logger.Println(err)
+			}
+			if res != nil && res.ReasonCode != packets.PubrecSuccess {
+				logger.Println(res)
+			}
+
+		}
 	})
 
 	for {
@@ -180,14 +206,14 @@ func (t *Mqtt) Run(ctx context.Context) {
 				res, err := t.Client.Publish(context.TODO(), &paho.Publish{
 					Payload: raw,
 					Topic:   fmt.Sprintf(t.Config.Rpc.I, t.Config.ID),
-					QoS:     '2',
+					QoS:     2,
 				})
 
 				if err != nil {
 					logger.Println(err)
 				}
 				if res != nil && res.ReasonCode != packets.PubrecSuccess {
-					logger.Println(err)
+					logger.Println(res)
 					continue
 				}
 
@@ -217,7 +243,7 @@ func (t *Mqtt) Run(ctx context.Context) {
 					})
 					// TODO: error log
 					if err != nil {
-						logger.Println(err)
+						logger.Println(res)
 						continue
 					}
 					if res != nil && res.ReasonCode != packets.PubrecSuccess {

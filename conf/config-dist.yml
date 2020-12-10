@@ -11,6 +11,8 @@ server:
 mqttd:
   id: 1
   client: "node-%d"
+  status:  "nodes/%d/status"
+  network: "nodes/%d/network"
   #broker: "mqtt://admin:public@mqtt.sblab.xyz:1883"
   broker: "mqtt://admin:public@localhost:1883"
   rpc :

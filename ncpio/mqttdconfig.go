@@ -7,10 +7,12 @@ import (
 )
 
 type MqttdConfig struct {
-	ID     int
-	Client string
-	Broker string
-	Rpc    struct {
+	ID      int
+	Client  string
+	Status  string
+	Network string
+	Broker  string
+	Rpc     struct {
 		I string
 		O string
 	}
