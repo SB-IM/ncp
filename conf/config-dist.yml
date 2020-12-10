@@ -10,6 +10,11 @@ server:
 
 mqttd:
   id: 1
+  static:
+    link_id: 1
+    lat: "22.6876423001"
+    lng: "114.2248673001"
+    alt: "10088.0001"
   client: "node-%d"
   status:  "nodes/%d/status"
   network: "nodes/%d/network"

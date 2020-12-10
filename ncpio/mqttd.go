@@ -36,6 +36,7 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 		return nil
 	}
 	logger.Printf("%+v\n", config)
+	logger.Printf("%+v\n", config.Static)
 
 	password, _ := opt.User.Password()
 
@@ -195,6 +196,29 @@ func (t *Mqtt) Run(ctx context.Context) {
 		}
 	})
 
+	status := &NodeStatus{
+		Status: t.Config.Static,
+	}
+
+	data := status.SetOnline("online")
+	raw, err := json.Marshal(data)
+	if err != nil {
+	} else {
+		res, err := t.Client.Publish(context.TODO(), &paho.Publish{
+			Payload: raw,
+			Topic:   fmt.Sprintf(t.Config.Network, t.Config.ID),
+			QoS:     0,
+		})
+
+		if err != nil {
+			logger.Println(err)
+		}
+		if res != nil && res.ReasonCode != packets.PubrecSuccess {
+			logger.Println(res)
+		}
+
+	}
+
 	for {
 		select {
 		case raw := <-t.I:
@@ -223,6 +247,31 @@ func (t *Mqtt) Run(ctx context.Context) {
 
 				// {"jsonrpc":"2.0","method":"test","params":[]}
 				// {"jsonrpc":"2.0","id":"test.0-1553321035000","method":"test","params":[]}
+
+				// {"jsonrpc":"2.0","method":"ncp_offline"}
+				onlineStatus := "offline"
+				if rpc.Method == "ncp_online" {
+					onlineStatus = "online"
+				}
+
+				data := status.SetOnline(onlineStatus)
+				raw, err := json.Marshal(data)
+				if err != nil {
+				} else {
+					res, err := t.Client.Publish(context.TODO(), &paho.Publish{
+						Payload: raw,
+						Topic:   fmt.Sprintf(t.Config.Network, t.Config.ID),
+						QoS:     0,
+					})
+
+					if err != nil {
+						logger.Println(err)
+					}
+					if res != nil && res.ReasonCode != packets.PubrecSuccess {
+						logger.Println(res)
+					}
+
+				}
 			} else {
 				//fmt.Println("[Tran]: ", string(raw))
 

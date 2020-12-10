@@ -1,6 +1,7 @@
 package ncpio
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/go-ping/ping"
@@ -29,6 +30,21 @@ type NodeStatus struct {
 	Msg       string        `json:"msg"`
 	Timestamp string        `json:"timestamp"`
 	Status    *StaticStatus `json:"status"`
+}
+
+func (t *NodeStatus) SetOnline(str string) *NodeStatus {
+	statusMap := map[string]int{
+		"online":   0,
+		"offline":  1,
+		"neterror": 2,
+	}
+
+	return &NodeStatus{
+		Code:      statusMap[str],
+		Msg:       str,
+		Timestamp: strconv.FormatInt(time.Now().Unix(), 10),
+		Status:    t.Status,
+	}
 }
 
 func NetworkPing(addr string, callback func(*NetworkStatus)) {

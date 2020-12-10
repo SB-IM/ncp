@@ -12,6 +12,7 @@ type MqttdConfig struct {
 	Status  string
 	Network string
 	Broker  string
+	Static  *StaticStatus
 	Rpc     struct {
 		I string
 		O string
