@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"os/exec"
 	"strings"
+	"time"
 
 	yaml "gopkg.in/yaml.v2"
 	"sb.im/ncp/ncpio"
@@ -37,7 +39,19 @@ func main() {
 	ncpios := ncpio.NewNcpIOs(config.NcpIO)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "mosquitto")
+	if err := cmd.Start(); err != nil {
+		log.Panicln(err)
+	}
+
+	// TODO: wait mqtt broker startup
+	time.Sleep(3 * time.Millisecond)
+
 	go ncpios.Run(ctx)
+
+	// wait tcp server startup
+	time.Sleep(3 * time.Millisecond)
 
 	msg1 := "2333333333333"
 	msg2 := "4555555555555"
@@ -86,6 +100,13 @@ func main() {
 	if string(<-ncpio.O) != msg1 {
 		log.Panicln("Should", msg1)
 	}
+
+	mqttAddr := "mqtt://localhost:1883"
+	pub := exec.CommandContext(ctx, "mosquitto_pub", "-L", mqttAddr+"/nodes/999/rpc/send", "-m", "xxxxx")
+	if err := pub.Start(); err != nil {
+		log.Panicln(err)
+	}
+	log.Printf("%s\n", <-ncpio.O)
 
 	log.Println("Successfully")
 }

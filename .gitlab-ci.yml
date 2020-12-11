@@ -1,6 +1,12 @@
 image: golang:1.13.1-buster
 
+stages:
+  - test
+  - e2e
+  - deploy
+
 .gobuild:
+  stage: test
   before_script:
     - go version
   script:
@@ -22,6 +28,24 @@ go1.14:
 go1.15:
   image: golang:1.15-buster
   extends: .gobuild
+
+.teste2e:
+  before_script:
+    - apt-get update -y && apt-get install -y mosquitto
+  script:
+    - make etoe
+  only:
+    refs:
+      - master
+      - dev
+
+teste2e:
+  stage: e2e
+  needs:
+    - job: go1.13
+    - job: go1.14
+    - job: go1.15
+  extends: .teste2e
 
 packaging:
   before_script:

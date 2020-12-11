@@ -32,6 +32,9 @@ cover:
 	go tool cover -func profile.cov
 	@rm profile.cov
 
+etoe:
+	go run ./e2e/main.go
+
 clean:
 	go clean
 
