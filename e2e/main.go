@@ -30,7 +30,7 @@ func getConfig(str string) (Config, error) {
 }
 
 func main() {
-	config, err := getConfig("e2e/config.yml")
+	config, err := getConfig("e2e/e2e.yml")
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
