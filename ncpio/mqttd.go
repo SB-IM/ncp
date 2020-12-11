@@ -160,7 +160,7 @@ func (t *Mqtt) Run(ctx context.Context) {
 	defer logger.Println("MQTT exit")
 	t.Client.Connect(ctx, t.Connect)
 
-	t.Client.Subscribe(context.TODO(), &paho.Subscribe{
+	res, err := t.Client.Subscribe(context.TODO(), &paho.Subscribe{
 		Subscriptions: map[string]paho.SubscribeOptions{
 			fmt.Sprintf(t.Config.Rpc.O, t.Config.ID): paho.SubscribeOptions{
 				QoS: 2,
@@ -170,6 +170,14 @@ func (t *Mqtt) Run(ctx context.Context) {
 			},
 		},
 	})
+
+	if err != nil {
+		logger.Println(err)
+	}
+	if res != nil {
+		logger.Println(res.Properties)
+		logger.Printf("%s\n", res.Reasons)
+	}
 
 	opt, err := url.Parse(t.Config.Broker)
 	if err != nil {

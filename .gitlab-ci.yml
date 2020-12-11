@@ -2,7 +2,7 @@ image: golang:1.13.1-buster
 
 stages:
   - test
-  - e2e
+  - broker
   - deploy
 
 .gobuild:
@@ -30,21 +30,36 @@ go1.15:
   extends: .gobuild
 
 .teste2e:
-  before_script:
-    - apt-get update -y && apt-get install -y mosquitto
   script:
+    - apt-get update -y && apt-get install -y mosquitto-clients
     - make etoe
+  needs:
+    - job: go1.13
+    - job: go1.14
+    - job: go1.15
   only:
     refs:
       - master
       - dev
 
-teste2e:
-  stage: e2e
-  needs:
-    - job: go1.13
-    - job: go1.14
-    - job: go1.15
+# Must Mosquitto >= 1.6
+# https://github.com/eclipse/mosquitto/blob/master/ChangeLog.txt#L616
+test mosquitto 1.6:
+  stage: broker
+  before_script:
+    - sed -i 's#mqtt://localhost:1883#mqtt://eclipse-mosquitto:1883#g' e2e/e2e.yml
+    - sed -i 's#mqtt://localhost:1883#mqtt://eclipse-mosquitto:1883#g' e2e/main.go
+  services:
+    - name: eclipse-mosquitto:1.6
+  extends: .teste2e
+
+test emqx:
+  stage: broker
+  before_script:
+    - apt-get update -y && apt-get install -y mosquitto-clients
+    - wget https://github.com/emqx/emqx/releases/download/v4.2.3/emqx-debian10-4.2.3-x86_64.deb
+    - dpkg -i emqx-debian10-4.2.3-x86_64.deb
+    - service emqx start
   extends: .teste2e
 
 packaging:

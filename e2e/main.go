@@ -30,24 +30,17 @@ func getConfig(str string) (Config, error) {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	config, err := getConfig("e2e/e2e.yml")
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 	log.Printf("%+v\n", config)
 
-	ncpios := ncpio.NewNcpIOs(config.NcpIO)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "mosquitto")
-	if err := cmd.Start(); err != nil {
-		log.Panicln(err)
-	}
-
-	// TODO: wait mqtt broker startup
-	time.Sleep(3 * time.Millisecond)
-
+	ncpios := ncpio.NewNcpIOs(config.NcpIO)
 	go ncpios.Run(ctx)
 
 	// wait tcp server startup
@@ -101,11 +94,16 @@ func main() {
 		log.Panicln("Should", msg1)
 	}
 
+	log.Println("Socket Successfully")
+
 	mqttAddr := "mqtt://localhost:1883"
-	pub := exec.CommandContext(ctx, "mosquitto_pub", "-L", mqttAddr+"/nodes/999/rpc/send", "-m", "xxxxx")
-	if err := pub.Start(); err != nil {
+	topic := "nodes/999/rpc/send"
+	pub := exec.CommandContext(ctx, "mosquitto_pub", "-L", mqttAddr+"/"+topic, "-m", "xxxxx")
+	if data, err := pub.CombinedOutput(); err != nil {
+		log.Printf("%s\n", data)
 		log.Panicln(err)
 	}
+
 	log.Printf("%s\n", <-ncpio.O)
 
 	log.Println("Successfully")

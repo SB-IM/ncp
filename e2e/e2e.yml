@@ -8,7 +8,7 @@ mqttd:
   client: "node-%d"
   status:  "nodes/%d/status"
   network: "nodes/%d/network"
-  broker: "mqtt://admin:public@localhost:1883"
+  broker: "mqtt://localhost:1883"
   rpc :
     i: "nodes/%d/rpc/recv"
     o: "nodes/%d/rpc/send"
