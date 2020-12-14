@@ -64,7 +64,7 @@ ncpio:
     o_rules:
       - regexp: '.*'
   - type: logger
-    params: "log/test.log"
+    params: "file:///tmp/ncp/test.log?size=128M&count=8&prefix=SB"
     i_rules:
       - regexp: '.*'
 
