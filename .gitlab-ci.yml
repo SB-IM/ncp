@@ -46,11 +46,10 @@ go1.15:
 # https://github.com/eclipse/mosquitto/blob/master/ChangeLog.txt#L616
 test mosquitto 1.6:
   stage: broker
-  before_script:
-    - sed -i 's#mqtt://localhost:1883#mqtt://eclipse-mosquitto:1883#g' e2e/e2e.yml
-    - sed -i 's#mqtt://localhost:1883#mqtt://eclipse-mosquitto:1883#g' e2e/main.go
   services:
     - name: eclipse-mosquitto:1.6
+  variables:
+    MQTT: "eclipse-mosquitto:1883"
   extends: .teste2e
 
 test emqx:

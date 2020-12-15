@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -29,7 +31,51 @@ func getConfig(str string) (Config, error) {
 	}
 }
 
+func generateMqttConfig(name string, config []byte) {
+	file, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	if _, err := file.Write(config); err != nil {
+		panic(err)
+	}
+}
+
 func main() {
+	mqttAddr := "mqtt://localhost:1883"
+	if addr := os.Getenv("MQTT"); addr != "" {
+		// addr "localhost:1883"
+		mqttAddr = fmt.Sprintf("mqtt://%s", addr)
+	}
+	var mqttdConfig = `
+mqttd:
+  id: 999
+  static:
+    link_id: 1
+    lat: "22.6876423001"
+    lng: "114.2248673001"
+    alt: "10088.0001"
+  client: "node-%d"
+  status:  "nodes/%d/status"
+  network: "nodes/%d/network"
+  broker: ` + mqttAddr + `
+  rpc :
+    i: "nodes/%d/rpc/recv"
+    o: "nodes/%d/rpc/send"
+  gtran:
+    prefix: "nodes/%d/msg/%s"
+  trans:
+    wether:
+      retain: true
+      qos: 0
+    battery:
+      retain: true
+      qos: 0
+
+`
+	tmpConfig := "test_mqttd.yml"
+	generateMqttConfig(tmpConfig, []byte(mqttdConfig))
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	config, err := getConfig("e2e/e2e.yml")
 	if err != nil {
@@ -96,7 +142,6 @@ func main() {
 
 	log.Println("Socket Successfully")
 
-	mqttAddr := "mqtt://localhost:1883"
 	topic := "nodes/999/rpc/send"
 	pub := exec.CommandContext(ctx, "mosquitto_pub", "-L", mqttAddr+"/"+topic, "-m", "xxxxx")
 	if data, err := pub.CombinedOutput(); err != nil {
@@ -106,5 +151,6 @@ func main() {
 
 	log.Printf("%s\n", <-ncpio.O)
 
+	os.Remove(tmpConfig)
 	log.Println("Successfully")
 }

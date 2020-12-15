@@ -1,27 +1,3 @@
-mqttd:
-  id: 999
-  static:
-    link_id: 1
-    lat: "22.6876423001"
-    lng: "114.2248673001"
-    alt: "10088.0001"
-  client: "node-%d"
-  status:  "nodes/%d/status"
-  network: "nodes/%d/network"
-  broker: "mqtt://localhost:1883"
-  rpc :
-    i: "nodes/%d/rpc/recv"
-    o: "nodes/%d/rpc/send"
-  gtran:
-    prefix: "nodes/%d/msg/%s"
-  trans:
-    wether:
-      retain: true
-      qos: 0
-    battery:
-      retain: true
-      qos: 0
-
 ncpio:
   - type: api
     i_rules:
@@ -35,7 +11,7 @@ ncpio:
     o_rules:
       - regexp: '.*'
   - type: mqtt
-    params: "e2e/e2e.yml"
+    params: "test_mqttd.yml"
     i_rules:
       - regexp: '.*'
     o_rules:
