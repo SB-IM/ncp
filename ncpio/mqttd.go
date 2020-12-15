@@ -214,8 +214,8 @@ func (t *Mqtt) Run(ctx context.Context) {
 	} else {
 		res, err := t.Client.Publish(context.TODO(), &paho.Publish{
 			Payload: raw,
-			Topic:   fmt.Sprintf(t.Config.Network, t.Config.ID),
-			QoS:     0,
+			Topic:   fmt.Sprintf(t.Config.Status, t.Config.ID),
+			QoS:     2,
 		})
 
 		if err != nil {
