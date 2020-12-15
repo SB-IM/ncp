@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"time"
 
 	"sb.im/ncp/util"
 
@@ -20,6 +21,8 @@ type Mqtt struct {
 	Client  *paho.Client
 	Connect *paho.Connect
 	Config  *MqttdConfig
+	status  *NodeStatus
+	cache   chan []byte
 	I       <-chan []byte
 	O       chan<- []byte
 }
@@ -39,18 +42,15 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 	logger.Printf("%+v\n", config.Static)
 
 	password, _ := opt.User.Password()
-
-	conn, err := net.Dial("tcp", opt.Hostname()+":"+opt.Port())
-	if err != nil {
-		logger.Println(err)
-	}
 	return &Mqtt{
-		I:      i,
-		O:      o,
+		I: i,
+		O: o,
+		status: &NodeStatus{
+			Status: config.Static,
+		},
 		Config: config,
 		Client: paho.NewClient(paho.ClientConfig{
 			ClientID: fmt.Sprint(config.Client, config.ID),
-			Conn:     conn,
 			Router: paho.NewSingleHandlerRouter(func(p *paho.Publish) {
 				o <- p.Payload
 			}),
@@ -157,10 +157,29 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 }
 
 func (t *Mqtt) Run(ctx context.Context) {
+	opt, err := url.Parse(t.Config.Broker)
+	if err != nil {
+		logger.Println(err)
+	}
+
+	for {
+		logger.Println("MQTT Connect")
+		if conn, err := net.Dial("tcp", opt.Hostname()+":"+opt.Port()); err != nil {
+			logger.Println(err)
+		} else {
+			t.Client.Conn = conn
+			t.doRun(ctx)
+			conn.Close()
+		}
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func (t *Mqtt) doRun(ctx context.Context) {
 	defer logger.Println("MQTT exit")
 	t.Client.Connect(ctx, t.Connect)
 
-	res, err := t.Client.Subscribe(context.TODO(), &paho.Subscribe{
+	res, err := t.Client.Subscribe(ctx, &paho.Subscribe{
 		Subscriptions: map[string]paho.SubscribeOptions{
 			fmt.Sprintf(t.Config.Rpc.O, t.Config.ID): paho.SubscribeOptions{
 				QoS: 2,
@@ -172,145 +191,157 @@ func (t *Mqtt) Run(ctx context.Context) {
 	})
 
 	if err != nil {
+		if res != nil {
+			logger.Printf("%+v\n", res)
+		}
 		logger.Println(err)
-	}
-	if res != nil {
-		logger.Println(res.Properties)
-		logger.Printf("%s\n", res.Reasons)
+		return
 	}
 
 	opt, err := url.Parse(t.Config.Broker)
 	if err != nil {
 		logger.Println(err)
+		return
 	}
 
 	go NetworkPing(opt.Hostname(), func(data *NetworkStatus) {
 		raw, err := json.Marshal(data)
 		if err != nil {
 		} else {
-			res, err := t.Client.Publish(context.TODO(), &paho.Publish{
+			res, err := t.Client.Publish(ctx, &paho.Publish{
+				Payload: raw,
+				Topic:   fmt.Sprintf(t.Config.Network, t.Config.ID),
+				QoS:     0,
+				Retain:  true,
+			})
+
+			if err != nil {
+				if res != nil {
+					logger.Printf("%+v\n", res)
+				}
+				logger.Println(err)
+				return
+			}
+		}
+	})
+
+	data := t.status.SetOnline("online")
+	raw, err := json.Marshal(data)
+	if err != nil {
+		logger.Println(err)
+		return
+	} else {
+		res, err := t.Client.Publish(ctx, &paho.Publish{
+			Payload: raw,
+			Topic:   fmt.Sprintf(t.Config.Status, t.Config.ID),
+			QoS:     2,
+			Retain:  true,
+		})
+
+		if err != nil {
+			if res != nil {
+				logger.Printf("%+v\n", res)
+			}
+			logger.Println(err)
+			return
+		}
+	}
+
+	for {
+		select {
+		case raw := <-t.cache:
+			if err := t.send(ctx, raw); err != nil {
+				t.cache <- raw
+				return
+			}
+		case raw := <-t.I:
+			if err := t.send(ctx, raw); err != nil {
+				t.cache <- raw
+				return
+			}
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (t *Mqtt) send(ctx context.Context, raw []byte) error {
+	if rpc, err := jsonrpc.Parse(raw); err == nil && (rpc.Type == jsonrpc.TypeSuccess || rpc.Type == jsonrpc.TypeErrors) {
+		//fmt.Println("[RES]: ", string(raw))
+		// {"jsonrpc":"2.0","result":"ok","id":"test.0-1607482556696-0"}
+		// {"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":"test.0-99991607483766.0"}
+
+		res, err := t.Client.Publish(ctx, &paho.Publish{
+			Payload: raw,
+			Topic:   fmt.Sprintf(t.Config.Rpc.I, t.Config.ID),
+			QoS:     2,
+		})
+
+		if err != nil {
+			if res != nil {
+				logger.Printf("%+v\n", res)
+			}
+			logger.Println(err)
+			return err
+		}
+	} else if err == nil && (rpc.Type == jsonrpc.TypeRequest || rpc.Type == jsonrpc.TypeNotify) {
+		//fmt.Println("[REQ]: ", string(raw))
+		// JSON-RPC Request Ignore
+
+		// {"jsonrpc":"2.0","method":"test","params":[]}
+		// {"jsonrpc":"2.0","id":"test.0-1553321035000","method":"test","params":[]}
+
+		// {"jsonrpc":"2.0","method":"ncp_offline"}
+		onlineStatus := "offline"
+		if rpc.Method == "ncp_online" {
+			onlineStatus = "online"
+		}
+
+		data := t.status.SetOnline(onlineStatus)
+		raw, err := json.Marshal(data)
+		if err != nil {
+		} else {
+			res, err := t.Client.Publish(ctx, &paho.Publish{
 				Payload: raw,
 				Topic:   fmt.Sprintf(t.Config.Network, t.Config.ID),
 				QoS:     0,
 			})
 
 			if err != nil {
+				if res != nil {
+					logger.Printf("%+v\n", res)
+				}
 				logger.Println(err)
+				return err
 			}
-			if res != nil && res.ReasonCode != packets.PubrecSuccess {
-				logger.Println(res)
-			}
-
 		}
-	})
-
-	status := &NodeStatus{
-		Status: t.Config.Static,
-	}
-
-	data := status.SetOnline("online")
-	raw, err := json.Marshal(data)
-	if err != nil {
 	} else {
-		res, err := t.Client.Publish(context.TODO(), &paho.Publish{
-			Payload: raw,
-			Topic:   fmt.Sprintf(t.Config.Status, t.Config.ID),
-			QoS:     2,
-		})
+		//fmt.Println("[Tran]: ", string(raw))
 
-		if err != nil {
-			logger.Println(err)
-		}
-		if res != nil && res.ReasonCode != packets.PubrecSuccess {
-			logger.Println(res)
-		}
-
-	}
-
-	for {
-		select {
-		case raw := <-t.I:
-			if rpc, err := jsonrpc.Parse(raw); err == nil && (rpc.Type == jsonrpc.TypeSuccess || rpc.Type == jsonrpc.TypeErrors) {
-				//fmt.Println("[RES]: ", string(raw))
-				// {"jsonrpc":"2.0","result":"ok","id":"test.0-1607482556696-0"}
-				// {"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":"test.0-99991607483766.0"}
-
-				res, err := t.Client.Publish(context.TODO(), &paho.Publish{
-					Payload: raw,
-					Topic:   fmt.Sprintf(t.Config.Rpc.I, t.Config.ID),
-					QoS:     2,
-				})
-
-				if err != nil {
-					logger.Println(err)
-				}
-				if res != nil && res.ReasonCode != packets.PubrecSuccess {
-					logger.Println(res)
-					continue
-				}
-
-			} else if err == nil && (rpc.Type == jsonrpc.TypeRequest || rpc.Type == jsonrpc.TypeNotify) {
-				//fmt.Println("[REQ]: ", string(raw))
-				// JSON-RPC Request Ignore
-
-				// {"jsonrpc":"2.0","method":"test","params":[]}
-				// {"jsonrpc":"2.0","id":"test.0-1553321035000","method":"test","params":[]}
-
-				// {"jsonrpc":"2.0","method":"ncp_offline"}
-				onlineStatus := "offline"
-				if rpc.Method == "ncp_online" {
-					onlineStatus = "online"
-				}
-
-				data := status.SetOnline(onlineStatus)
-				raw, err := json.Marshal(data)
-				if err != nil {
-				} else {
-					res, err := t.Client.Publish(context.TODO(), &paho.Publish{
-						Payload: raw,
-						Topic:   fmt.Sprintf(t.Config.Network, t.Config.ID),
-						QoS:     0,
-					})
-
-					if err != nil {
-						logger.Println(err)
-					}
-					if res != nil && res.ReasonCode != packets.PubrecSuccess {
-						logger.Println(res)
-					}
-
-				}
-			} else {
-				//fmt.Println("[Tran]: ", string(raw))
-
-				for key, data := range util.DetachTran(raw) {
-					opt, ok := t.Config.Trans[key]
-					if !ok {
-						// TODO: 'opt' use Default
-					}
-					res, err := t.Client.Publish(context.TODO(), &paho.Publish{
-						Payload: data,
-						Topic:   fmt.Sprintf(t.Config.Gtran.Prefix, t.Config.ID, key),
-						QoS:     opt.QoS,
-						Retain:  opt.Retain,
-						//Properties *Properties
-						//PacketID   uint16
-						//Duplicate  bool
-
-					})
-					// TODO: error log
-					if err != nil {
-						logger.Println(res)
-						continue
-					}
-					if res != nil && res.ReasonCode != packets.PubrecSuccess {
-						logger.Println(err)
-						continue
-					}
-				}
+		for key, data := range util.DetachTran(raw) {
+			opt, ok := t.Config.Trans[key]
+			if !ok {
+				// TODO: 'opt' use Default
 			}
-		case <-ctx.Done():
-			return
+			res, err := t.Client.Publish(ctx, &paho.Publish{
+				Payload: data,
+				Topic:   fmt.Sprintf(t.Config.Gtran.Prefix, t.Config.ID, key),
+				QoS:     opt.QoS,
+				Retain:  opt.Retain,
+				//Properties *Properties
+				//PacketID   uint16
+				//Duplicate  bool
+
+			})
+
+			if err != nil {
+				if res != nil {
+					logger.Printf("%+v\n", res)
+				}
+				logger.Println(err)
+				return err
+			}
 		}
 	}
+	return nil
 }
