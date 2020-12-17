@@ -2,6 +2,8 @@ github.com/SB-IM/jsonrpc-lite v0.1.0 h1:56BY9IL+oLi+aKW72EiusQ7hwHb7OnUYd/luuIPg
 github.com/SB-IM/jsonrpc-lite v0.1.0/go.mod h1:wMW5By1MvoRLQEXOKjrHXFu3PN+luff0glznJUcAxlM=
 github.com/SB-IM/jsonrpc2 v0.0.0-20200103125104-382421846c30 h1:B52kvDbwam7DC6Y8bGgbchGR2dOm40vxlLyLkC2vFws=
 github.com/SB-IM/jsonrpc2 v0.0.0-20200103125104-382421846c30/go.mod h1:5MuAO2ii5AS453YOjeQ499mSqOn628lMZQ4NpwJQCio=
+github.com/SB-IM/paho.golang v0.9.1-0.20201217071417-0a81fa99b1a0 h1:75ksAvhAZhZ0mudDNMDcFVjj0UsuHQaPCWvchE2p8NU=
+github.com/SB-IM/paho.golang v0.9.1-0.20201217071417-0a81fa99b1a0/go.mod h1:YQGkleVyAhFHtQUSP1xwh0LCm0mTEqgLYMQQaDhlMs0=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/eclipse/paho.golang v0.9.0 h1:SSfuVCAZRmGhnt2a1v2rHtaIW5Jqyj5YhgnNX/IZq2o=
 github.com/eclipse/paho.golang v0.9.0/go.mod h1:B+WcEglXvTCZu/1HPu1U0Sy1RTPbccPB3wfHCCDn/Cc=

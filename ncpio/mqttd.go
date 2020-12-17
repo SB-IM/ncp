@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	//"os"
 	"time"
 
 	"sb.im/ncp/util"
@@ -176,6 +177,11 @@ func (t *Mqtt) Run(ctx context.Context) {
 }
 
 func (t *Mqtt) doRun(ctx context.Context) {
+	pinger := NewPingHandler(t.Client, fmt.Sprintf(t.Config.Delay, t.Config.ID))
+	//l := logger.New(os.Stdout, "xxx: ", 0)
+	//pinger.SetDebug(l)
+	t.Client.PingHandler = pinger
+
 	defer logger.Println("MQTT exit")
 	t.Client.Connect(ctx, t.Connect)
 

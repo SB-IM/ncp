@@ -13,3 +13,5 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.2.7
 )
+
+replace github.com/eclipse/paho.golang v0.9.1-0.20201006131139-9638458a263e => github.com/SB-IM/paho.golang v0.9.1-0.20201217071417-0a81fa99b1a0
