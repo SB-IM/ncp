@@ -4,6 +4,10 @@ github.com/SB-IM/jsonrpc2 v0.0.0-20200103125104-382421846c30 h1:B52kvDbwam7DC6Y8
 github.com/SB-IM/jsonrpc2 v0.0.0-20200103125104-382421846c30/go.mod h1:5MuAO2ii5AS453YOjeQ499mSqOn628lMZQ4NpwJQCio=
 github.com/SB-IM/paho.golang v0.9.1-0.20201217071417-0a81fa99b1a0 h1:75ksAvhAZhZ0mudDNMDcFVjj0UsuHQaPCWvchE2p8NU=
 github.com/SB-IM/paho.golang v0.9.1-0.20201217071417-0a81fa99b1a0/go.mod h1:YQGkleVyAhFHtQUSP1xwh0LCm0mTEqgLYMQQaDhlMs0=
+github.com/SB-IM/paho.golang v0.9.1-0.20201218203345-edbb28da59af h1:li8o3ddGBY1NB3NQlmjW4vrBhZ7ZxbsSziJ2wRW+bXU=
+github.com/SB-IM/paho.golang v0.9.1-0.20201218203345-edbb28da59af/go.mod h1:BSKaf0256EbcaBhV0ZDEgXFh+U6Axj2lCMv+Gf3qeTI=
+github.com/SB-IM/paho.golang v0.9.1-0.20201219073040-1065b475cdc5 h1:NKQAB7UrP3r1OjsmMdHug6l+2AW08n+PkrDzuhwzKZw=
+github.com/SB-IM/paho.golang v0.9.1-0.20201219073040-1065b475cdc5/go.mod h1:BSKaf0256EbcaBhV0ZDEgXFh+U6Axj2lCMv+Gf3qeTI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/eclipse/paho.golang v0.9.0 h1:SSfuVCAZRmGhnt2a1v2rHtaIW5Jqyj5YhgnNX/IZq2o=
 github.com/eclipse/paho.golang v0.9.0/go.mod h1:B+WcEglXvTCZu/1HPu1U0Sy1RTPbccPB3wfHCCDn/Cc=
@@ -36,6 +40,8 @@ golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6 h1:bjcUS9ztw9kFmmIxJInhon/0
 golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 h1:qwRHBd0NqMbJxfbotnDhm2ByMI1Shq4Y6oRJo21SGJA=
 golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sync v0.0.0-20201207232520-09787c993a3a h1:DcqTD9SDLc+1P/r1EmRBwnVsrOwW+kk2vWf9n+1sGhs=
+golang.org/x/sync v0.0.0-20201207232520-09787c993a3a/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a h1:1BGLXjeY4akVXGgbC9HugT3Jv3hCI0z56oJR5vAMgBU=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

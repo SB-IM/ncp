@@ -14,4 +14,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.7
 )
 
-replace github.com/eclipse/paho.golang v0.9.1-0.20201006131139-9638458a263e => github.com/SB-IM/paho.golang v0.9.1-0.20201217071417-0a81fa99b1a0
+replace github.com/eclipse/paho.golang v0.9.1-0.20201006131139-9638458a263e => github.com/SB-IM/paho.golang v0.9.1-0.20201219073040-1065b475cdc5
