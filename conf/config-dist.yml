@@ -16,7 +16,6 @@ mqttd:
     lng: "114.2248673001"
     alt: "10088.0001"
   client: "node-%d"
-  delay:   "nodes/%d/delay"
   status:  "nodes/%d/status"
   network: "nodes/%d/network"
   #broker: "mqtt://admin:public@mqtt.sblab.xyz:1883"

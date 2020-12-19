@@ -3,7 +3,9 @@ package ncpio
 // Fork from: https://github.com/eclipse/paho.golang/blob/master/paho/pinger.go
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"sync"
@@ -15,10 +17,11 @@ import (
 )
 
 type PingHandler struct {
-	client  *paho.Client
-	topic   string
-	lastPub string
-	delay   time.Duration
+	client    *paho.Client
+	topic     string
+	lastPub   []byte
+	sendCount uint64
+	recvCount uint64
 
 	mu              sync.Mutex
 	lastPing        time.Time
@@ -68,6 +71,7 @@ func (p *PingHandler) Start(c net.Conn, pt time.Duration) {
 				}
 				atomic.AddInt32(&p.pingOutstanding, 1)
 				p.lastPing = time.Now()
+				p.sendCount++
 				p.debug.Println("pingHandler sending ping request")
 			}
 		}
@@ -94,13 +98,19 @@ func (p *PingHandler) Stop() {
 // PingResp is the library provided Pinger's implementation of
 // the required interface function()
 func (p *PingHandler) PingResp() {
-	delay := fmt.Sprintf("%d", time.Since(p.lastPing).Milliseconds())
+	p.recvCount++
+	status := &NetworkStatus{
+		Delay: int(time.Since(p.lastPing).Milliseconds()),
+		Loss:  100 - int(p.recvCount/p.sendCount*100),
+	}
+	raw, _ := json.Marshal(status)
+
 	p.debug.Printf("delay: %s, pingHandler resetting pingOutstanding", time.Since(p.lastPing))
 	atomic.StoreInt32(&p.pingOutstanding, 0)
 
-	if p.lastPub != delay {
+	if bytes.Compare(p.lastPub, raw) != 0 {
 		res, err := p.client.Publish(context.TODO(), &paho.Publish{
-			Payload: []byte(delay),
+			Payload: raw,
 			Topic:   p.topic,
 			QoS:     0,
 			Retain:  true,
@@ -114,7 +124,7 @@ func (p *PingHandler) PingResp() {
 			return
 		}
 	}
-	p.lastPub = delay
+	p.lastPub = raw
 }
 
 // SetDebug sets the logger l to be used for printing debug

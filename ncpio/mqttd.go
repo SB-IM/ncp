@@ -177,7 +177,7 @@ func (t *Mqtt) Run(ctx context.Context) {
 }
 
 func (t *Mqtt) doRun(ctx context.Context) {
-	pinger := NewPingHandler(t.Client, fmt.Sprintf(t.Config.Delay, t.Config.ID))
+	pinger := NewPingHandler(t.Client, fmt.Sprintf(t.Config.Network, t.Config.ID))
 	//pinger.SetDebug(logger.New(os.Stdout, "[Pinger]: ", logger.LstdFlags | logger.Lshortfile))
 	t.Client.PingHandler = pinger
 
@@ -202,33 +202,6 @@ func (t *Mqtt) doRun(ctx context.Context) {
 		logger.Println(err)
 		return
 	}
-
-	opt, err := url.Parse(t.Config.Broker)
-	if err != nil {
-		logger.Println(err)
-		return
-	}
-
-	go NetworkPing(opt.Hostname(), func(data *NetworkStatus) {
-		raw, err := json.Marshal(data)
-		if err != nil {
-		} else {
-			res, err := t.Client.Publish(ctx, &paho.Publish{
-				Payload: raw,
-				Topic:   fmt.Sprintf(t.Config.Network, t.Config.ID),
-				QoS:     0,
-				Retain:  true,
-			})
-
-			if err != nil {
-				if res != nil {
-					logger.Printf("%+v\n", res)
-				}
-				logger.Println(err)
-				return
-			}
-		}
-	})
 
 	data := t.status.SetOnline("online")
 	raw, err := json.Marshal(data)

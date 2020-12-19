@@ -9,7 +9,6 @@ import (
 type MqttdConfig struct {
 	ID      int
 	Client  string
-	Delay   string
 	Status  string
 	Network string
 	Broker  string
