@@ -178,8 +178,7 @@ func (t *Mqtt) Run(ctx context.Context) {
 
 func (t *Mqtt) doRun(ctx context.Context) {
 	pinger := NewPingHandler(t.Client, fmt.Sprintf(t.Config.Delay, t.Config.ID))
-	//l := logger.New(os.Stdout, "xxx: ", 0)
-	//pinger.SetDebug(l)
+	//pinger.SetDebug(logger.New(os.Stdout, "[Pinger]: ", logger.LstdFlags | logger.Lshortfile))
 	t.Client.PingHandler = pinger
 
 	defer logger.Println("MQTT exit")

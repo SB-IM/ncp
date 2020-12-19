@@ -18,7 +18,6 @@ type PingHandler struct {
 	client  *paho.Client
 	topic   string
 	lastPub string
-	time    time.Time
 	delay   time.Duration
 
 	mu              sync.Mutex
@@ -62,17 +61,15 @@ func (p *PingHandler) Start(c net.Conn, pt time.Duration) {
 				//time to send a ping
 				if _, err := packets.NewControlPacket(packets.PINGREQ).WriteTo(p.conn); err != nil {
 
-					p.debug.Println("pingHandler sending ping request")
 					if p.pingFailHandler != nil {
 						p.pingFailHandler(err)
 					}
 					return
 				}
+				atomic.AddInt32(&p.pingOutstanding, 1)
+				p.lastPing = time.Now()
+				p.debug.Println("pingHandler sending ping request")
 			}
-			atomic.AddInt32(&p.pingOutstanding, 1)
-			p.time = time.Now()
-			p.debug.Println("pingHandler sending ping request")
-
 		}
 	}
 }
@@ -97,8 +94,8 @@ func (p *PingHandler) Stop() {
 // PingResp is the library provided Pinger's implementation of
 // the required interface function()
 func (p *PingHandler) PingResp() {
-	delay := fmt.Sprintf("%d", time.Since(p.time).Milliseconds())
-	p.debug.Printf("delay: %s, pingHandler resetting pingOutstanding", time.Since(p.time))
+	delay := fmt.Sprintf("%d", time.Since(p.lastPing).Milliseconds())
+	p.debug.Printf("delay: %s, pingHandler resetting pingOutstanding", time.Since(p.lastPing))
 	atomic.StoreInt32(&p.pingOutstanding, 0)
 
 	if p.lastPub != delay {
