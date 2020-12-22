@@ -1,0 +1,13 @@
+ncpio:
+  - type: api
+    i_rules:
+      - regexp: '.*'
+    o_rules:
+      - regexp: '.*'
+  - type: tcps
+    params: "localhost:1222"
+    i_rules:
+      - regexp: '.*'
+    o_rules:
+      - regexp: '.*'
+

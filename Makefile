@@ -33,7 +33,7 @@ cover:
 	@rm profile.cov
 
 etoe:
-	go run ./e2e/main.go
+	go run ./e2e/
 
 clean:
 	go clean
