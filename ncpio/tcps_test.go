@@ -76,4 +76,10 @@ func TestTcps(t *testing.T) {
 	if string(<-O) != msg1 {
 		t.Error("Should", msg1)
 	}
+
+	// Test TCPS Listener not closed
+	cancel()
+	ctx, cancel = context.WithCancel(context.Background())
+	go ncpios.Run(ctx)
+	time.Sleep(time.Millisecond)
 }
