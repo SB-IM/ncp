@@ -10,25 +10,25 @@ import (
 
 func TestNcpIOs(t *testing.T) {
 	configs := []Config{
-		Config{
+		{
 			Type:   "api",
 			Params: "233",
 			IRules: []Rule{
-				Rule{`.*"result".*`, false},
+				{`.*"result".*`, false},
 			},
 			ORules: []Rule{
-				Rule{`.*"result".*`, true},
-				Rule{`.*`, false},
+				{`.*"result".*`, true},
+				{`.*`, false},
 			},
 		},
-		Config{
+		{
 			Type:   "jsonrpc2",
 			Params: "233",
 			IRules: []Rule{
-				Rule{`.*`, false},
+				{`.*`, false},
 			},
 			ORules: []Rule{
-				Rule{`.*"result".*`, false},
+				{`.*"result".*`, false},
 			},
 		},
 	}
@@ -56,25 +56,25 @@ func TestNcpIOs(t *testing.T) {
 
 func TestNcpIOsMultipleRules(t *testing.T) {
 	configs := []Config{
-		Config{
+		{
 			Type:   "api",
 			Params: "233",
 			IRules: []Rule{
-				Rule{`.*`, false},
+				{`.*`, false},
 			},
 			ORules: []Rule{
-				Rule{`.*"method": ?"webrtc".*`, true},
-				Rule{`.*`, false},
+				{`.*"method": ?"webrtc".*`, true},
+				{`.*`, false},
 			},
 		},
-		Config{
+		{
 			Type:   "jsonrpc2",
 			Params: "233",
 			IRules: []Rule{
-				Rule{`.*`, false},
+				{`.*`, false},
 			},
 			ORules: []Rule{
-				Rule{`.*`, false},
+				{`.*`, false},
 			},
 		},
 	}

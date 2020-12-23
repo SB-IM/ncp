@@ -7,10 +7,10 @@ import (
 func TestFilter(t *testing.T) {
 	if Filter(
 		[]Rule{
-			Rule{
+			{
 				Regexp: "233",
 			},
-			Rule{
+			{
 				Regexp: `.*"result".*`,
 			},
 		},
@@ -23,10 +23,10 @@ func TestFilter(t *testing.T) {
 func TestFilterMatch(t *testing.T) {
 	if !Filter(
 		[]Rule{
-			Rule{
+			{
 				Regexp: "233",
 			},
-			Rule{
+			{
 				Regexp: `.*"method".*`,
 			},
 		},
@@ -39,10 +39,10 @@ func TestFilterMatch(t *testing.T) {
 func TestFilterRegexpErrorAfterMatch(t *testing.T) {
 	if !Filter(
 		[]Rule{
-			Rule{
+			{
 				Regexp: "2(d",
 			},
-			Rule{
+			{
 				Regexp: `.*"method".*`,
 			},
 		},
@@ -55,7 +55,7 @@ func TestFilterRegexpErrorAfterMatch(t *testing.T) {
 func TestFilterMatchInvert(t *testing.T) {
 	if Filter(
 		[]Rule{
-			Rule{
+			{
 				Regexp: `.*"method".*`,
 				Invert: true,
 			},
@@ -78,14 +78,14 @@ func TestFilterNoRule(t *testing.T) {
 func TestFilterMultipleRules(t *testing.T) {
 	if Filter(
 		[]Rule{
-			Rule{
+			{
 				Regexp: `.*"jsonrpc".*`,
 				Invert: true,
 			},
-			Rule{
+			{
 				Regexp: "233",
 			},
-			Rule{
+			{
 				Regexp: `.*"method".*`,
 				Invert: true,
 			},
@@ -99,11 +99,11 @@ func TestFilterMultipleRules(t *testing.T) {
 func TestFilterMultipleRules2(t *testing.T) {
 	if Filter(
 		[]Rule{
-			Rule{
+			{
 				Regexp: `.*"method": ?"webrtc".*`,
 				Invert: true,
 			},
-			Rule{
+			{
 				Regexp: `.*`,
 				Invert: true,
 			},

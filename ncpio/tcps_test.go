@@ -12,23 +12,23 @@ import (
 func TestTcps(t *testing.T) {
 	addr := "localhost:1222"
 	ncpios := NewNcpIOs([]Config{
-		Config{
+		{
 			Type: "api",
 			IRules: []Rule{
-				Rule{`.*`, false},
+				{`.*`, false},
 			},
 			ORules: []Rule{
-				Rule{`.*`, false},
+				{`.*`, false},
 			},
 		},
-		Config{
+		{
 			Type:   "tcps",
 			Params: addr,
 			IRules: []Rule{
-				Rule{`.*`, false},
+				{`.*`, false},
 			},
 			ORules: []Rule{
-				Rule{`.*`, false},
+				{`.*`, false},
 			},
 		},
 	})
@@ -79,7 +79,8 @@ func TestTcps(t *testing.T) {
 
 	// Test TCPS Listener not closed
 	cancel()
-	ctx, cancel = context.WithCancel(context.Background())
-	go ncpios.Run(ctx)
+	ctx2, cancel2 := context.WithCancel(context.Background())
+	defer cancel2()
+	go ncpios.Run(ctx2)
 	time.Sleep(time.Millisecond)
 }
