@@ -29,10 +29,10 @@ go1.15:
   image: golang:1.15-buster
   extends: .gobuild
 
-.teste2e:
+.test-integration:
   script:
     - apt-get update -y && apt-get install -y mosquitto-clients
-    - make etoe
+    - make test-integration
   needs:
     - job: go1.13
     - job: go1.14
@@ -50,7 +50,7 @@ test mosquitto 1.6:
     - name: eclipse-mosquitto:1.6
   variables:
     MQTT: "eclipse-mosquitto:1883"
-  extends: .teste2e
+  extends: .test-integration
 
 test emqx:
   stage: broker
@@ -59,7 +59,7 @@ test emqx:
     - wget https://github.com/emqx/emqx/releases/download/v4.2.3/emqx-debian10-4.2.3-x86_64.deb
     - dpkg -i emqx-debian10-4.2.3-x86_64.deb
     - service emqx start
-  extends: .teste2e
+  extends: .test-integration
 
 packaging:
   before_script:

@@ -22,18 +22,22 @@ install:
 	install -Dm644 conf/ncp@.service -t ${PROFIX}/lib/systemd/system/
 	install -Dm644 conf/config-dist.yml -t ${PROFIX}/etc/ncp/
 
+# Need mosquitto && mosquitto_pub
+test-integration:
+	go test ./tests/integration
+
+test-unit:
+	go test ./ncpio ./util ./history -cover
+
 test:
 	go test ./... -cover -v
 
 # \(statements\)(?:\s+)?(\d+(?:\.\d+)?%)
 # https://stackoverflow.com/questions/61246686/go-coverage-over-multiple-package-and-gitlab-coverage-badge
 cover:
-	go test ./... -coverprofile profile.cov
+	go test ./ncpio ./util ./history -coverprofile profile.cov
 	go tool cover -func profile.cov
 	@rm profile.cov
-
-etoe:
-	go run ./e2e/
 
 clean:
 	go clean
