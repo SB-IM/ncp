@@ -15,16 +15,16 @@ mqttd:
     lat: "22.6876423001"
     lng: "114.2248673001"
     alt: "10088.0001"
-  client: "node-%d"
-  status:  "nodes/%d/status"
-  network: "nodes/%d/network"
+  client: "node-%s"
+  status:  "nodes/%s/status"
+  network: "nodes/%s/network"
   #broker: "mqtt://admin:public@mqtt.sblab.xyz:1883"
   broker: "mqtt://admin:public@localhost:1883"
   rpc :
-    i: "nodes/%d/rpc/recv"
-    o: "nodes/%d/rpc/send"
+    i: "nodes/%s/rpc/recv"
+    o: "nodes/%s/rpc/send"
   gtran:
-    prefix: "nodes/%d/msg/%s"
+    prefix: "nodes/%s/msg/%s"
   trans:
     wether:
       retain: true

@@ -7,7 +7,7 @@ import (
 )
 
 type MqttdConfig struct {
-	ID      int
+	ID      string
 	Client  string
 	Status  string
 	Network string

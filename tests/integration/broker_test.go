@@ -14,6 +14,8 @@ import (
 )
 
 func TestBroker(t *testing.T) {
+	id := "000"
+	mqttRpcRecv, mqttRpcSend := "nodes/%s/rpc/recv", "nodes/%s/rpc/send"
 	mqttAddr := "mqtt://localhost:1883"
 	if addr := os.Getenv("MQTT"); addr != "" {
 		// addr "localhost:1883"
@@ -21,21 +23,21 @@ func TestBroker(t *testing.T) {
 	}
 	var mqttdConfig = `
 mqttd:
-  id: 999
+  id: ` + id + `
   static:
     link_id: 1
     lat: "22.6876423001"
     lng: "114.2248673001"
     alt: "10088.0001"
-  client: "node-%d"
-  status:  "nodes/%d/status"
-  network: "nodes/%d/network"
+  client: "node-%s"
+  status:  "nodes/%s/status"
+  network: "nodes/%s/network"
   broker: ` + mqttAddr + `
   rpc :
-    i: "nodes/%d/rpc/recv"
-    o: "nodes/%d/rpc/send"
+    i: ` + mqttRpcRecv + `
+    o: ` + mqttRpcSend + `
   gtran:
-    prefix: "nodes/%d/msg/%s"
+    prefix: "nodes/%s/msg/%s"
   trans:
     wether:
       retain: true
@@ -103,8 +105,7 @@ mqttd:
 	for i := 0; i < count; i++ {
 		req[i] = fmt.Sprintf(`{"jsonrpc":"2.0","method":"test","id":"test.%d"}`, i)
 
-		sendTopic := "nodes/999/rpc/send"
-		pub := exec.CommandContext(ctx, "mosquitto_pub", "-L", mqttAddr+"/"+sendTopic, "-m", req[i])
+		pub := exec.CommandContext(ctx, "mosquitto_pub", "-L", mqttAddr+"/"+fmt.Sprintf(mqttRpcSend, id), "-m", req[i])
 		if out, err := pub.CombinedOutput(); err != nil {
 			t.Error(string(out), err)
 		}
@@ -125,8 +126,7 @@ mqttd:
 	}
 
 	// Recv
-	recvTopic := "nodes/999/rpc/recv"
-	sub := exec.CommandContext(ctx, "mosquitto_sub", "-L", mqttAddr+"/"+recvTopic)
+	sub := exec.CommandContext(ctx, "mosquitto_sub", "-L", mqttAddr+"/"+fmt.Sprintf(mqttRpcRecv, id))
 	stdout, err := sub.StdoutPipe()
 	if err != nil {
 		t.Error(err)
