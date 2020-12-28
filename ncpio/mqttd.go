@@ -43,12 +43,14 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 	logger.Printf("%+v\n", config.Static)
 
 	password, _ := opt.User.Password()
+	status := &NodeStatus{
+		Status: config.Static,
+	}
+	raw, _ := json.Marshal(status.SetOnline("neterror"))
 	return &Mqtt{
-		I: i,
-		O: o,
-		status: &NodeStatus{
-			Status: config.Static,
-		},
+		I:      i,
+		O:      o,
+		status: status,
 		Config: config,
 		Client: paho.NewClient(paho.ClientConfig{
 			ClientID: fmt.Sprint(config.Client, config.ID),
@@ -57,7 +59,10 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 			}),
 		}),
 		Connect: paho.ConnectFromPacketConnect(&packets.Connect{
-			WillMessage: []byte("233"),
+			WillMessage: raw,
+			WillRetain:  true,
+			WillTopic:   fmt.Sprintf(config.Status, config.ID),
+			WillQOS:     1,
 			Password:    []byte(password),
 			Username:    opt.User.Username(),
 			ClientID:    fmt.Sprintf(config.Client, config.ID),
@@ -203,27 +208,8 @@ func (t *Mqtt) doRun(ctx context.Context) {
 		return
 	}
 
-	data := t.status.SetOnline("online")
-	raw, err := json.Marshal(data)
-	if err != nil {
-		logger.Println(err)
-		return
-	} else {
-		res, err := t.Client.Publish(ctx, &paho.Publish{
-			Payload: raw,
-			Topic:   fmt.Sprintf(t.Config.Status, t.Config.ID),
-			QoS:     2,
-			Retain:  true,
-		})
-
-		if err != nil {
-			if res != nil {
-				logger.Printf("%+v\n", res)
-			}
-			logger.Println(err)
-			return
-		}
-	}
+	defer t.setStatus("offline")
+	t.setStatus("online")
 
 	for {
 		select {
@@ -275,24 +261,7 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 			onlineStatus = "online"
 		}
 
-		data := t.status.SetOnline(onlineStatus)
-		raw, err := json.Marshal(data)
-		if err != nil {
-		} else {
-			res, err := t.Client.Publish(ctx, &paho.Publish{
-				Payload: raw,
-				Topic:   fmt.Sprintf(t.Config.Network, t.Config.ID),
-				QoS:     0,
-			})
-
-			if err != nil {
-				if res != nil {
-					logger.Printf("%+v\n", res)
-				}
-				logger.Println(err)
-				return err
-			}
-		}
+		t.setStatus(onlineStatus)
 	} else {
 		//fmt.Println("[Tran]: ", string(raw))
 
@@ -319,6 +288,30 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 				logger.Println(err)
 				return err
 			}
+		}
+	}
+	return nil
+}
+
+func (t *Mqtt) setStatus(str string) error {
+	raw, err := json.Marshal(t.status.SetOnline(str))
+	if err != nil {
+		logger.Println(err)
+		return err
+	} else {
+		res, err := t.Client.Publish(context.Background(), &paho.Publish{
+			Payload: raw,
+			Topic:   fmt.Sprintf(t.Config.Status, t.Config.ID),
+			QoS:     1,
+			Retain:  true,
+		})
+
+		if err != nil {
+			if res != nil {
+				logger.Printf("%+v\n", res)
+			}
+			logger.Println(err)
+			return err
 		}
 	}
 	return nil
