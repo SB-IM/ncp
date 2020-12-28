@@ -59,6 +59,9 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 			}),
 		}),
 		Connect: paho.ConnectFromPacketConnect(&packets.Connect{
+			WillProperties: &packets.Properties{},
+
+			WillFlag:    true,
 			WillMessage: raw,
 			WillRetain:  true,
 			WillTopic:   fmt.Sprintf(config.Status, config.ID),
