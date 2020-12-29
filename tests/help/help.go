@@ -1,4 +1,4 @@
-package integration
+package help
 
 import (
 	"io/ioutil"
@@ -12,7 +12,7 @@ type Config struct {
 	NcpIO []ncpio.Config `json:"ncpio"`
 }
 
-func getConfig(str string) (Config, error) {
+func GetConfig(str string) (Config, error) {
 	config := Config{}
 	configFile, err := ioutil.ReadFile(str)
 	if err != nil {
@@ -23,7 +23,7 @@ func getConfig(str string) (Config, error) {
 	}
 }
 
-func generateMqttConfig(name string, config []byte) {
+func GenerateMqttConfig(name string, config []byte) {
 	file, err := os.Create(name)
 	if err != nil {
 		panic(err)

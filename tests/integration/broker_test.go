@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"sb.im/ncp/ncpio"
+	"sb.im/ncp/tests/help"
 )
 
 func TestBroker(t *testing.T) {
@@ -48,7 +49,7 @@ mqttd:
 
 `
 	mqttdConfigPath := "test_mqttd.yml"
-	generateMqttConfig(mqttdConfigPath, []byte(mqttdConfig))
+	help.GenerateMqttConfig(mqttdConfigPath, []byte(mqttdConfig))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
