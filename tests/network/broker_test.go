@@ -121,7 +121,8 @@ mqttd:
 	cmdRun("tc qdisc del dev eth0 root")
 
 	ncpio.I <- []byte(fmt.Sprintf(`{"jsonrpc":"2.0","result":"ok","id":"test-m.%d"}`, 6))
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
+	fmt.Println("send msg")
 
 	count := 1
 	req := make([]string, count)
