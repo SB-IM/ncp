@@ -22,6 +22,10 @@ install:
 	install -Dm644 conf/ncp@.service -t ${PROFIX}/lib/systemd/system/
 	install -Dm644 conf/config-dist.yml -t ${PROFIX}/etc/ncp/
 
+
+test-detach:
+	CGO_ENABLED=0 go test ./tests/network -c -o test.network -v
+
 # Need mosquitto && mosquitto_pub
 test-integration:
 	go test ./tests/integration

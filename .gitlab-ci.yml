@@ -33,6 +33,8 @@ go1.15:
   script:
     - apt-get update -y && apt-get install -y mosquitto-clients
     - make test-integration
+    - make test-detach
+    - ./test.network
   needs:
     - job: go1.13
     - job: go1.14
