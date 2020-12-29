@@ -173,10 +173,11 @@ func (t *Mqtt) Run(ctx context.Context) {
 	}
 
 	for {
-		logger.Println("MQTT Connect")
+		logger.Println("MQTT Try Connect")
 		if conn, err := net.Dial("tcp", opt.Hostname()+":"+opt.Port()); err != nil {
 			logger.Println(err)
 		} else {
+			logger.Println("MQTT Connected")
 			t.Client.Conn = conn
 			t.doRun(ctx)
 			conn.Close()
@@ -190,12 +191,12 @@ func (t *Mqtt) doRun(ctx context.Context) {
 	//pinger.SetDebug(logger.New(os.Stdout, "[Pinger]: ", logger.LstdFlags | logger.Lshortfile))
 	t.Client.PingHandler = pinger
 
-	defer logger.Println("MQTT exit")
+	defer logger.Println("MQTT Close")
 	t.Client.Connect(ctx, t.Connect)
 
 	res, err := t.Client.Subscribe(ctx, &paho.Subscribe{
 		Subscriptions: map[string]paho.SubscribeOptions{
-			fmt.Sprintf(t.Config.Rpc.O, t.Config.ID): paho.SubscribeOptions{
+			fmt.Sprintf(t.Config.Rpc.O, t.Config.ID): {
 				QoS: 2,
 				//RetainHandling    byte
 				//NoLocal           bool
