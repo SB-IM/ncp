@@ -50,6 +50,7 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 	return &Mqtt{
 		I:      i,
 		O:      o,
+		cache:  make(chan []byte, 128),
 		status: status,
 		Config: config,
 		Client: paho.NewClient(paho.ClientConfig{
