@@ -31,7 +31,7 @@ mqttd:
 
 # type: tcps / tcpc / mqtt / logger / jsonrpc2 / api
 ncpio:
-	- type: tcpc
+  - type: tcpc
     params: "localhost:8980"
     i_rules:
       - regexp: '.*"method": ?"(webrtc|history|ncp)".*'
