@@ -1,13 +1,3 @@
-server:
-  id: 1
-  secret_key: ""
-  #mqtt: "mqtt[s]://[username][:password]@host.domain[:port]"
-  mqtt: "mqtt://admin:public@localhost:1883"
-  #mqtt: "mqtt://admin:public@mqtt.sblab.xyz:1883"
-  tcpc: "localhost:8980"
-  tcps: "localhost:1208"
-  tran: "localhost:1122"
-
 mqttd:
   id: 1
   static:
@@ -18,8 +8,8 @@ mqttd:
   client: "node-%s"
   status:  "nodes/%s/status"
   network: "nodes/%s/network"
-  #broker: "mqtt://admin:public@mqtt.sblab.xyz:1883"
-  broker: "mqtt://admin:public@localhost:1883"
+  #mqtt: "mqtt[s]://[username][:password]@host.domain[:port]"
+  broker: "mqtt://localhost:1883"
   rpc :
     i: "nodes/%s/rpc/recv"
     o: "nodes/%s/rpc/send"
@@ -32,33 +22,33 @@ mqttd:
     battery:
       retain: true
       qos: 0
+    sensor:
+      retain: true
+      qos: 1
+    notification:
+      retain: true
+      qos: 2
 
-
+# type: tcps / tcpc / mqtt / logger / jsonrpc2 / api
 ncpio:
-  # tcps / tcpc / mqtt / history / logger / jsonrpc2 / build-in / api
-  - type: api
+	- type: tcpc
+    params: "localhost:8980"
     i_rules:
-      - regexp: '.*'
+      - regexp: '.*"method": ?"(webrtc|history|ncp)".*'
         invert: true
-    o_rules:
-      - regexp: '.*'
-        invert: true
-  - type: jsonrpc2
-    params: "233"
-    i_rules:
-      - regexp: '.*'
-        invert: true
-    o_rules:
-      - regexp: '.*'
-        invert: true
-  - type: tcps
-    params: "localhost:1222"
-    i_rules:
       - regexp: '.*"method".*'
     o_rules:
       - regexp: '.*'
+  - type: tcps
+    params: "localhost:1208"
+    i_rules:
+      - regexp: '.*"method": ?"webrtc".*'
+    o_rules:
+      - regexp: '.*"method".*'
+        invert: true
+      - regexp: '.*'
   - type: mqtt
-    params: "config.yml"
+    params: "/etc/ncp/depot.yml"
     i_rules:
       - regexp: '.*'
     o_rules:
@@ -67,6 +57,39 @@ ncpio:
     params: "file:///tmp/ncp/test.log?size=128M&count=8&prefix=SB"
     i_rules:
       - regexp: '.*'
+
+# ncpio:
+#   - type: api
+#     i_rules:
+#       - regexp: '.*'
+#         invert: true
+#     o_rules:
+#       - regexp: '.*'
+#         invert: true
+#   - type: jsonrpc2
+#     params: "233"
+#     i_rules:
+#       - regexp: '.*'
+#         invert: true
+#     o_rules:
+#       - regexp: '.*'
+#         invert: true
+#   - type: tcps
+#     params: "localhost:1222"
+#     i_rules:
+#       - regexp: '.*"method".*'
+#     o_rules:
+#       - regexp: '.*'
+#   - type: mqtt
+#     params: "config.yml"
+#     i_rules:
+#       - regexp: '.*'
+#     o_rules:
+#       - regexp: '.*'
+#   - type: logger
+#     params: "file:///tmp/ncp/test.log?size=128M&count=8&prefix=SB"
+#     i_rules:
+#       - regexp: '.*'
 
 
 # JSONRPC 2.0 simulation
@@ -84,37 +107,4 @@ ncpio:
 #     o_rules:
 #       - regexp: '.*"method".*'
 #         invert: true
-
-log:
-  # production: Log output type[xxx] file, development: Log output os.Stdout
-  env: "development"
-  path: "log/"
-  # :debug < :info < :warn < :error < :fatal < :unknown
-  # TODO
-  # level Not Implement
-  level: "info"
-  type:
-    core: "core"
-    tcpc: "client"
-    tcps: "server"
-    tran: "tran"
-    mqtt: "mqtt"
-    mqtr: "mqtt_tran"
-
-ncp:
-  download:
-    map: '../map'
-  upload:
-    map: '../map'
-    air_log: 'log.log'
-  status:
-    link_id: 2
-    position_ok: true
-    lat: "22.6876423001"
-    lng: "114.2248673001"
-    alt: "80.0001"
-#  shell:
-#    path: "scripts/"
-#    prefix: "sh"
-#    suffix: ".sh"
 
