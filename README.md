@@ -1,7 +1,8 @@
 # Node control protocol
 
-#### Compile && Run
-go >= 1.12.4
+## Compile && Run
+
+go >= 1.13
 
 ```sh
 make
@@ -11,56 +12,55 @@ cp conf/config-dist.yml config.yml
 ncp -c config.yml
 ```
 
-### Architecture design
+## Architecture design
 
-```
+```sh
 Cloud -------------- Mqtt broker
-  |                   |
-  | httpUpload        |
-  |                   |
-built-in commond  --- ncp --------- tran json
+                      |
+                      |
+                      |
+jsonrpc2 simulation -- ncp --------- logger
                     /      \
                    /        \
                   /          \
            socket client      socket server
            jsonrpc            jsonrpc
-          airctl/dockctl      has 'reg' commond
+          airctl/dockctl      startlight
 
 ```
 
-Name | Description
+Type | Description
 ---- | -----------
-built-in | eg: `status, upload, download`
-socket client | only: jsonrpc 2.0, legacy, plan remove
-socket server | only: jsonrpc 2.0, reg method wait call
-tran | Single status message transmission
+api  | build-in interface
+tcpc | TCP socket client
+tcps | TCP socket server
+mqtt | Connect Mqtt Broker
+logger  | Record message log
+jsonrpc2| JSONRPC 2.0 simulation
 
-#### reg
-##### Notify:
-```json
-{"jsonrpc": "2.0", "method": "reg", "params": ["webrtc", "webrtc_close"]}
-```
+### Rule
 
-##### Request:
-```
---> {"jsonrpc": "2.0", "method": "reg", "params": ["webrtc", "webrtc_close"], "id": 1}
+`i_rules` input the io rule (before send)
 
-<-- {"jsonrpc": "2.0", "result": ["webrtc", "webrtc_close"], "id": 1}
+`o_rules` output the io rule (after recv)
 
---> {"jsonrpc":"2.0","id":"test.0-00000000","method":"reg","params":["status", "webrtc"]}
+- default matched false: disallow
+- if regexp matched: allow
+- `invert` Invert matched result: !allow
+- pipeline matched
 
-<-- {"jsonrpc":"2.0","result":["status","webrtc"],"id":"test.0-00000000"}
-```
+### mqtt tran
 
-#### tran
+type: `mqtt` build-in
 
 tran socket recv
+
 ```json
 {"weather":{"WD":0,"WS":0,"T":66115,"RH":426,"Pa":99780}}
 ```
+
 mqtt send topic: `node/:id/msg/weather`
 
 ```json
 {"WD":0,"WS":0,"T":66115,"RH":426,"Pa":99780}
 ```
-
