@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strconv"
+	"strings"
 	//"os"
 	"time"
 
@@ -49,18 +51,23 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 		Status: config.Static,
 	}
 	raw, _ := json.Marshal(status.SetOnline("neterror"))
+	cache := make(chan []byte, 128)
 	return &Mqtt{
 		Archive: history.New(128),
 
 		I:      i,
 		O:      o,
-		cache:  make(chan []byte, 128),
+		cache:  cache,
 		status: status,
 		Config: config,
 		Client: paho.NewClient(paho.ClientConfig{
 			ClientID: fmt.Sprint(config.Client, config.ID),
 			Router: paho.NewSingleHandlerRouter(func(p *paho.Publish) {
-				o <- p.Payload
+				if jsonrpc.ParseObject(p.Payload).Method == "history" {
+					cache <- p.Payload
+				} else {
+					o <- p.Payload
+				}
 			}),
 		}),
 		Connect: paho.ConnectFromPacketConnect(&packets.Connect{
@@ -265,12 +272,42 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 		// {"jsonrpc":"2.0","id":"test.0-1553321035000","method":"test","params":[]}
 
 		// {"jsonrpc":"2.0","method":"ncp_offline"}
-		onlineStatus := "offline"
-		if rpc.Method == "ncp_online" {
-			onlineStatus = "online"
+
+		if rpc.Method == "history" {
+			type Params struct {
+				Topic string `json:"topic"`
+				Time  string `json:"time"`
+			}
+			raw_params, _ := rpc.Params.MarshalJSON()
+			params := &Params{}
+			err := json.Unmarshal(raw_params, params)
+
+			if err != nil {
+				rpc.Errors.Message = "Params Error"
+			} else {
+				historys := t.Archive.GetLatestHistorys(strings.Split(params.Topic, "/")[1], params.Time)
+				results := make(map[string]json.RawMessage, len(historys))
+				for _, h := range historys {
+					results[strconv.FormatInt(h.Time.Unix(), 10)] = json.RawMessage(h.Data)
+				}
+				d, _ := json.Marshal(results)
+				dd := json.RawMessage(d)
+				rpc.Result = &dd
+			}
+			rpc.Method = ""
+			rpc.Params = nil
+			data, _ := rpc.ToJSON()
+			fmt.Println(string(data))
+			t.cache <- data
 		}
 
-		t.setStatus(onlineStatus)
+		if rpc.Method == "ncp_online" {
+			t.setStatus("online")
+		}
+		if rpc.Method == "ncp_offline" {
+			t.setStatus("offline")
+		}
+
 	} else {
 		//fmt.Println("[Tran]: ", string(raw))
 
