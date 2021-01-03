@@ -9,6 +9,7 @@ import (
 	//"os"
 	"time"
 
+	"sb.im/ncp/history"
 	"sb.im/ncp/util"
 
 	"github.com/SB-IM/jsonrpc-lite"
@@ -19,6 +20,7 @@ import (
 )
 
 type Mqtt struct {
+	Archive *history.Archive
 	Client  *paho.Client
 	Connect *paho.Connect
 	Config  *MqttdConfig
@@ -48,6 +50,8 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 	}
 	raw, _ := json.Marshal(status.SetOnline("neterror"))
 	return &Mqtt{
+		Archive: history.New(128),
+
 		I:      i,
 		O:      o,
 		cache:  make(chan []byte, 128),
@@ -271,6 +275,9 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 		//fmt.Println("[Tran]: ", string(raw))
 
 		for key, data := range util.DetachTran(raw) {
+			if !t.Archive.FilterAdd(key, data) {
+				continue
+			}
 			opt, ok := t.Config.Trans[key]
 			if !ok {
 				// TODO: 'opt' use Default
