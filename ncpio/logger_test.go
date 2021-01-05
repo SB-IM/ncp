@@ -15,7 +15,7 @@ const (
 )
 
 func TestLogger(t *testing.T) {
-	params := "file://"+TestLoggerPath+"test.log?size=128M&count=8&prefix=TEST"
+	params := "file://" + TestLoggerPath + "test.log?size=128M&count=8&prefix=TEST"
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -50,26 +50,26 @@ func TestLogger(t *testing.T) {
 }
 
 func lineCounter(r io.Reader) (int, error) {
-    buf := make([]byte, 32*1024)
-    count := 0
-    lineSep := []byte{'\n'}
+	buf := make([]byte, 32*1024)
+	count := 0
+	lineSep := []byte{'\n'}
 
-    for {
-        c, err := r.Read(buf)
-        count += bytes.Count(buf[:c], lineSep)
+	for {
+		c, err := r.Read(buf)
+		count += bytes.Count(buf[:c], lineSep)
 
-        switch {
-        case err == io.EOF:
-            return count, nil
+		switch {
+		case err == io.EOF:
+			return count, nil
 
-        case err != nil:
-            return count, err
-        }
-    }
+		case err != nil:
+			return count, err
+		}
+	}
 }
 
 func TestRotateLogger(t *testing.T) {
-	params := "file://"+TestLoggerPath+"rotate.log?size=128&count=5&prefix=TEST"
+	params := "file://" + TestLoggerPath + "rotate.log?size=128&count=5&prefix=TEST"
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
