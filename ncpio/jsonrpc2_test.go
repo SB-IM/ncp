@@ -2,10 +2,9 @@ package ncpio
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
-	"github.com/SB-IM/jsonrpc2"
+	"github.com/SB-IM/jsonrpc-lite"
 )
 
 func TestJsonrpc2(t *testing.T) {
@@ -21,9 +20,8 @@ func TestJsonrpc2(t *testing.T) {
 	i <- []byte(`{"jsonrpc":"2.0","id":"sdwc.1-1553321035000","method":"dooropen","params":[]}`)
 	data := <-o
 
-	j := &jsonrpc2.Jsonrpc{}
-	json.Unmarshal(data, j)
-	if !j.IsSuccess() {
+	j := jsonrpc.ParseObject(data)
+	if j.Type != jsonrpc.TypeSuccess {
 		t.Errorf("%s\n", data)
 	}
 
@@ -47,13 +45,12 @@ func TestJsonrpc2Error(t *testing.T) {
 	i <- []byte(`{"jsonrpc":"2.0","id":"sdwc.1-1553321035000","method":"dooropen","params":[]}`)
 	data := <-o
 
-	j := &jsonrpc2.Jsonrpc{}
-	json.Unmarshal(data, j)
-	if j.IsSuccess() {
+	j := jsonrpc.ParseObject(data)
+	if j.Type == jsonrpc.TypeSuccess {
 		t.Errorf("%s\n", data)
 	} else {
-		if j.Error.Message != "xxxxx" {
-			t.Error(j.Error.Message)
+		if j.Errors.Message != "xxxxx" {
+			t.Error(j.Errors.Message)
 		}
 	}
 }

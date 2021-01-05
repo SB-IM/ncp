@@ -4,18 +4,18 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/SB-IM/jsonrpc2"
+	"github.com/SB-IM/jsonrpc-lite"
 	logger "log"
 )
 
 type Jsonrpc2 struct {
-	jsonrpc *jsonrpc2.WireResponse
+	jsonrpc *jsonrpc.Jsonrpc
 	I       <-chan []byte
 	O       chan<- []byte
 }
 
 func NewJsonrpc2(params string, i <-chan []byte, o chan<- []byte) *Jsonrpc2 {
-	jsonrpc_res := &jsonrpc2.WireResponse{}
+	jsonrpc_res := &jsonrpc.Jsonrpc{}
 
 	err := json.Unmarshal([]byte(params), jsonrpc_res)
 	if err != nil {
@@ -40,7 +40,7 @@ func (t *Jsonrpc2) simulation(ctx context.Context) {
 		case raw := <-t.I:
 			data, err := t.rpcCall(raw)
 			if err != nil {
-				logger.Println(err)
+				logger.Println(string(data), err)
 				continue
 			}
 			if len(data) != 0 {
@@ -53,13 +53,17 @@ func (t *Jsonrpc2) simulation(ctx context.Context) {
 }
 
 func (t *Jsonrpc2) rpcCall(req []byte) ([]byte, error) {
-	jsonrpc_req := jsonrpc2.WireRequest{}
-	err := json.Unmarshal(req, &jsonrpc_req)
+	jsonrpc_req, err := jsonrpc.Parse(req)
+
 	if err != nil {
 		return []byte{}, err
 	}
 
-	if jsonrpc_req.IsNotify() {
+	if jsonrpc_req.Type == jsonrpc.TypeInvalid {
+		return []byte{}, nil
+	}
+
+	if jsonrpc_req.Type == jsonrpc.TypeNotify {
 		return []byte{}, nil
 	}
 
