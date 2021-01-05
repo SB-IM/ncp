@@ -22,7 +22,8 @@ install:
 	install -Dm644 conf/ncp@.service -t ${PROFIX}/lib/systemd/system/
 	install -Dm644 conf/config-dist.yml -t ${PROFIX}/etc/ncp/
 
-
+# Need Container Network Interface
+# Linux tc (Traffic Control)
 test-detach:
 	CGO_ENABLED=0 go test ./tests/network -c -o test.network -v
 
@@ -30,11 +31,8 @@ test-detach:
 test-integration:
 	go test ./tests/integration
 
-test-unit:
-	go test ./ncpio ./util ./history -cover
-
 test:
-	go test ./... -cover -v
+	go test ./ncpio ./util ./history -cover
 
 # \(statements\)(?:\s+)?(\d+(?:\.\d+)?%)
 # https://stackoverflow.com/questions/61246686/go-coverage-over-multiple-package-and-gitlab-coverage-badge
