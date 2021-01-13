@@ -16,8 +16,7 @@ run:
 	go run `ls *.go | grep -v _test.go`
 
 install:
-	install -Dm755 ncp -t ${PROFIX}/usr/lib/ncp/
-	install -Dm644 scripts/* -t ${PROFIX}/usr/lib/ncp/scripts/
+	install -Dm755 ncp -t ${PROFIX}/usr/bin/
 	install -Dm644 conf/ncp.service -t ${PROFIX}/lib/systemd/system/
 	install -Dm644 conf/ncp@.service -t ${PROFIX}/lib/systemd/system/
 	install -Dm644 conf/config-dist.yml -t ${PROFIX}/etc/ncp/

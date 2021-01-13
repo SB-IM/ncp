@@ -10,8 +10,7 @@ Type=simple
 #User=nobody
 Restart=on-failure
 RestartSec=5s
-WorkingDirectory=/usr/lib/ncp/
-ExecStart=/usr/lib/ncp/ncp -c /etc/ncp/%i.yml
+ExecStart=/usr/bin/ncp -c /etc/ncp/%i.yml
 KillSignal=SIGINT
 
 [Install]
