@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	//"os"
+	"os"
 	"time"
 
 	"sb.im/ncp/history"
@@ -69,6 +69,9 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 					o <- p.Payload
 				}
 			}),
+			OnDisconnect: func(p *paho.Disconnect) {
+				logger.Panicln(p)
+			},
 		}),
 		Connect: paho.ConnectFromPacketConnect(&packets.Connect{
 			WillProperties: &packets.Properties{},
@@ -178,6 +181,9 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 }
 
 func (t *Mqtt) Run(ctx context.Context) {
+	t.Client.SetDebugLogger(logger.New(os.Stdout, "[DEBUG]: ", logger.LstdFlags | logger.Lshortfile))
+	t.Client.SetErrorLogger(logger.New(os.Stdout, "[ERROR]: ", logger.LstdFlags | logger.Lshortfile))
+
 	opt, err := url.Parse(t.Config.Broker)
 	if err != nil {
 		logger.Println(err)
@@ -343,6 +349,7 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 }
 
 func (t *Mqtt) setStatus(str string) error {
+	logger.Println("Set Status: ", str)
 	raw, err := json.Marshal(t.status.SetOnline(str))
 	if err != nil {
 		logger.Println(err)
