@@ -3,12 +3,13 @@ package ncpio
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
-	"os"
 	"time"
 
 	"sb.im/ncp/history"
@@ -28,6 +29,7 @@ type Mqtt struct {
 	Config  *MqttdConfig
 	status  *NodeStatus
 	cache   chan []byte
+	errCh   chan error
 	I       <-chan []byte
 	O       chan<- []byte
 }
@@ -52,12 +54,15 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 	}
 	raw, _ := json.Marshal(status.SetOnline("neterror"))
 	cache := make(chan []byte, 128)
+	errCh := make(chan error)
+
 	return &Mqtt{
 		Archive: history.New(128),
 
 		I:      i,
 		O:      o,
 		cache:  cache,
+		errCh:  errCh,
 		status: status,
 		Config: config,
 		Client: paho.NewClient(paho.ClientConfig{
@@ -70,7 +75,12 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 				}
 			}),
 			OnDisconnect: func(p *paho.Disconnect) {
+				fmt.Println("OnDisconnect")
 				logger.Panicln(p)
+				errCh <- errors.New("Server Send Disconnect")
+			},
+			OnClientError: func(err error) {
+				errCh <- err
 			},
 		}),
 		Connect: paho.ConnectFromPacketConnect(&packets.Connect{
@@ -190,16 +200,21 @@ func (t *Mqtt) Run(ctx context.Context) {
 	}
 
 	for {
-		logger.Println("MQTT Try Connect")
-		if conn, err := net.Dial("tcp", opt.Hostname()+":"+opt.Port()); err != nil {
-			logger.Println(err)
-		} else {
-			logger.Println("MQTT Connected")
-			t.Client.Conn = conn
-			t.doRun(ctx)
-			conn.Close()
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			logger.Println("MQTT Try Connect")
+			if conn, err := net.Dial("tcp", opt.Hostname()+":"+opt.Port()); err != nil {
+				logger.Println(err)
+			} else {
+				logger.Println("MQTT Connected")
+				t.Client.Conn = conn
+				t.doRun(ctx)
+				conn.Close()
+			}
+			time.Sleep(1 * time.Second)
 		}
-		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -245,6 +260,9 @@ func (t *Mqtt) doRun(ctx context.Context) {
 				t.cache <- raw
 				return
 			}
+		case err := <-t.errCh:
+			logger.Println(err)
+			return
 		case <-ctx.Done():
 			return
 		}
