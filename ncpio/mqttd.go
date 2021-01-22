@@ -3,7 +3,6 @@ package ncpio
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -29,7 +28,6 @@ type Mqtt struct {
 	Config  *MqttdConfig
 	status  *NodeStatus
 	cache   chan []byte
-	errCh   chan error
 	I       <-chan []byte
 	O       chan<- []byte
 }
@@ -54,7 +52,9 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 	}
 	raw, _ := json.Marshal(status.SetOnline("neterror"))
 	cache := make(chan []byte, 128)
-	errCh := make(chan error)
+
+	// 2h
+	sessionExpiryInterval := uint32(7200)
 
 	return &Mqtt{
 		Archive: history.New(128),
@@ -62,7 +62,6 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 		I:      i,
 		O:      o,
 		cache:  cache,
-		errCh:  errCh,
 		status: status,
 		Config: config,
 		Client: paho.NewClient(paho.ClientConfig{
@@ -74,14 +73,6 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 					o <- p.Payload
 				}
 			}),
-			OnDisconnect: func(p *paho.Disconnect) {
-				fmt.Println("OnDisconnect")
-				logger.Panicln(p)
-				errCh <- errors.New("Server Send Disconnect")
-			},
-			OnClientError: func(err error) {
-				errCh <- err
-			},
 		}),
 		Connect: paho.ConnectFromPacketConnect(&packets.Connect{
 			WillProperties: &packets.Properties{},
@@ -119,7 +110,7 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 				//SubscriptionIdentifier *uint32
 				//// SessionExpiryInterval is the time in seconds after a client disconnects
 				//// that the server should retain the session information (subscriptions etc)
-				//SessionExpiryInterval *uint32
+				SessionExpiryInterval: &sessionExpiryInterval,
 				//// AssignedClientID is the server assigned client identifier in the case
 				//// that a client connected without specifying a clientID the server
 				//// generates one and returns it in the Connack
@@ -208,7 +199,7 @@ func (t *Mqtt) Run(ctx context.Context) {
 			if conn, err := net.Dial("tcp", opt.Hostname()+":"+opt.Port()); err != nil {
 				logger.Println(err)
 			} else {
-				logger.Println("MQTT Connected")
+				logger.Println("MQTT TCP Connected")
 				t.Client.Conn = conn
 				t.doRun(ctx)
 				conn.Close()
@@ -218,13 +209,27 @@ func (t *Mqtt) Run(ctx context.Context) {
 	}
 }
 
-func (t *Mqtt) doRun(ctx context.Context) {
+func (t *Mqtt) doRun(parent context.Context) {
 	pinger := NewPingHandler(t.Client, fmt.Sprintf(t.Config.Network, t.Config.ID))
 	//pinger.SetDebug(logger.New(os.Stdout, "[Pinger]: ", logger.LstdFlags | logger.Lshortfile))
 	t.Client.PingHandler = pinger
 
+	ctx, cancel := context.WithCancel(parent)
+	t.Client.OnDisconnect = func(p *paho.Disconnect) {
+		fmt.Println("OnDisconnect")
+		logger.Panicln(p)
+		cancel()
+	}
+
+	t.Client.OnClientError = func(err error) {
+		fmt.Println("OnClientError")
+		logger.Println(err)
+		cancel()
+	}
+
 	defer logger.Println("MQTT Close")
 	t.Client.Connect(ctx, t.Connect)
+	logger.Println("MQTT Connected")
 
 	res, err := t.Client.Subscribe(ctx, &paho.Subscribe{
 		Subscriptions: map[string]paho.SubscribeOptions{
@@ -260,9 +265,6 @@ func (t *Mqtt) doRun(ctx context.Context) {
 				t.cache <- raw
 				return
 			}
-		case err := <-t.errCh:
-			logger.Println(err)
-			return
 		case <-ctx.Done():
 			return
 		}

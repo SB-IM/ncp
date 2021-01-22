@@ -2,6 +2,8 @@ github.com/SB-IM/jsonrpc-lite v0.1.0 h1:56BY9IL+oLi+aKW72EiusQ7hwHb7OnUYd/luuIPg
 github.com/SB-IM/jsonrpc-lite v0.1.0/go.mod h1:wMW5By1MvoRLQEXOKjrHXFu3PN+luff0glznJUcAxlM=
 github.com/SB-IM/paho.golang v0.9.1-0.20210121044738-926a17219d78 h1:gz8n5MX3sBQF+ELrYpT7wfSGcZl0mzipydUHzLJX+wE=
 github.com/SB-IM/paho.golang v0.9.1-0.20210121044738-926a17219d78/go.mod h1:BSKaf0256EbcaBhV0ZDEgXFh+U6Axj2lCMv+Gf3qeTI=
+github.com/SB-IM/paho.golang v0.9.1-0.20210121065116-d9b1abe6fae1 h1:YO5GSqn5//zoTVG0Wx5S+w8R8CVjtrpQxQCBexdNbow=
+github.com/SB-IM/paho.golang v0.9.1-0.20210121065116-d9b1abe6fae1/go.mod h1:BSKaf0256EbcaBhV0ZDEgXFh+U6Axj2lCMv+Gf3qeTI=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 h1:Ghm4eQYC0nEPnSJdVkTrXpu9KtoVCSo1hg7mtI7G9KU=
