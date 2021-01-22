@@ -58,6 +58,7 @@ test emqx latest:
   stage: broker
   services:
     - name: emqx/emqx:latest
+      alias: emqx
   variables:
     MQTT: "emqx:1883"
   extends: .test-integration
@@ -66,6 +67,7 @@ test emqx 4.2.6:
   stage: broker
   services:
     - name: emqx/emqx:4.2.6
+      alias: emqx
   variables:
     MQTT: "emqx:1883"
   extends: .test-integration
