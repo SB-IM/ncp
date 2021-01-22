@@ -59,7 +59,15 @@ test emqx latest:
   services:
     - name: emqx/emqx:latest
   variables:
-    MQTT: "emqx/emqx:1883"
+    MQTT: "emqx:1883"
+  extends: .test-integration
+
+test emqx 4.2.6:
+  stage: broker
+  services:
+    - name: emqx/emqx:4.2.6
+  variables:
+    MQTT: "emqx:1883"
   extends: .test-integration
 
 test emqx deb:
