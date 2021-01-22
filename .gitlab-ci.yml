@@ -54,7 +54,15 @@ test mosquitto 1.6:
     MQTT: "eclipse-mosquitto:1883"
   extends: .test-integration
 
-test emqx:
+test emqx latest:
+  stage: broker
+  services:
+    - name: emqx/emqx:latest
+  variables:
+    MQTT: "emqx/emqx:1883"
+  extends: .test-integration
+
+test emqx deb:
   stage: broker
   before_script:
     - apt-get update -y && apt-get install -y mosquitto-clients

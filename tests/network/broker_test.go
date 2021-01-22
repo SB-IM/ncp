@@ -110,6 +110,8 @@ mqttd:
 
 	// Initial
 	cmdRun("tc qdisc add dev eth0 root netem loss 0%")
+	defer cmdRun("tc qdisc del dev eth0 root")
+
 	cmdRun("tc qdisc change dev eth0 root netem loss 100%")
 
 	ncpio.I <- []byte(fmt.Sprintf(`{"jsonrpc":"2.0","result":"ok","id":"test-m.%d"}`, 1))
@@ -118,7 +120,6 @@ mqttd:
 	time.Sleep(10 * time.Second)
 
 	cmdRun("tc qdisc change dev eth0 root netem loss 0%")
-	cmdRun("tc qdisc del dev eth0 root")
 
 	ncpio.I <- []byte(fmt.Sprintf(`{"jsonrpc":"2.0","result":"ok","id":"test-m.%d"}`, 6))
 	time.Sleep(3 * time.Second)

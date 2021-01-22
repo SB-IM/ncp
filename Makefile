@@ -23,6 +23,16 @@ install:
 
 # Need Container Network Interface
 # Linux tc (Traffic Control)
+#
+# Manual test
+# docker run --cap-add "NET_ADMIN" -it -v $(pwd):/ncp  golang:1.13.1-buster /bin/bash
+# apt-get update -y && apt-get install -y mosquitto-clients
+# cd /ncp
+#
+# docker run eclipse-mosquitto:1.6
+#
+# # YOU Broker IP
+# MQTT=172.17.0.3:1883 ./test.network
 test-detach:
 	CGO_ENABLED=0 go test ./tests/network -c -o test.network -v
 
