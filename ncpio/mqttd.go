@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"os"
+	//"os"
 	"strconv"
 	"strings"
 	"time"
@@ -184,8 +184,8 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 }
 
 func (t *Mqtt) Run(ctx context.Context) {
-	t.Client.SetDebugLogger(logger.New(os.Stdout, "[DEBUG]: ", logger.LstdFlags | logger.Lshortfile))
-	t.Client.SetErrorLogger(logger.New(os.Stdout, "[ERROR]: ", logger.LstdFlags | logger.Lshortfile))
+	//t.Client.SetDebugLogger(logger.New(os.Stdout, "[DEBUG]: ", logger.LstdFlags | logger.Lshortfile))
+	//t.Client.SetErrorLogger(logger.New(os.Stdout, "[ERROR]: ", logger.LstdFlags | logger.Lshortfile))
 
 	opt, err := url.Parse(t.Config.Broker)
 	if err != nil {
