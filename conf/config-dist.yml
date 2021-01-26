@@ -1,14 +1,14 @@
 mqttd:
   id: 1
   static:
-    link_id: 1
+    link_id: 2
     lat: "22.6876423001"
     lng: "114.2248673001"
     alt: "10088.0001"
   client: "node-%s"
   status:  "nodes/%s/status"
   network: "nodes/%s/network"
-  #mqtt: "mqtt[s]://[username][:password]@host.domain[:port]"
+  # broker: "mqtt[s]://[username][:password]@host.domain[:port]"
   broker: "mqtt://localhost:1883"
   rpc :
     i: "nodes/%s/rpc/recv"
@@ -26,7 +26,7 @@ mqttd:
       retain: true
       qos: 1
     notification:
-      retain: true
+      retain: false
       qos: 2
 
 # type: tcps / tcpc / mqtt / logger / jsonrpc2 / api
@@ -48,7 +48,7 @@ ncpio:
         invert: true
       - regexp: '.*'
   - type: mqtt
-    params: "/etc/ncp/depot.yml"
+    params: "config.yml"
     i_rules:
       - regexp: '.*'
     o_rules:
@@ -58,39 +58,69 @@ ncpio:
     i_rules:
       - regexp: '.*'
 
+# # Drone example:
 # ncpio:
-#   - type: api
+#   - type: tcpc
+#     params: "localhost:9234"
 #     i_rules:
-#       - regexp: '.*'
+#       - regexp: '.*"method": ?"(webrtc|history)".*'
 #         invert: true
-#     o_rules:
-#       - regexp: '.*'
-#         invert: true
-#   - type: jsonrpc2
-#     params: "233"
-#     i_rules:
-#       - regexp: '.*'
-#         invert: true
-#     o_rules:
-#       - regexp: '.*'
-#         invert: true
-#   - type: tcps
-#     params: "localhost:1222"
-#     i_rules:
 #       - regexp: '.*"method".*'
 #     o_rules:
 #       - regexp: '.*'
+#   - type: tcps
+#     params: "localhost:1207"
+#     i_rules:
+#       - regexp: '.*"method": ?"webrtc".*'
+#     o_rules:
+#       - regexp: '.*"method".*'
+#         invert: true
+#       - regexp: '.*'
 #   - type: mqtt
-#     params: "config.yml"
+#     params: "/etc/ncp/drone.yml"
 #     i_rules:
 #       - regexp: '.*'
 #     o_rules:
 #       - regexp: '.*'
 #   - type: logger
-#     params: "file:///tmp/ncp/test.log?size=128M&count=8&prefix=SB"
+#     params: "file:///var/log/ncp/drone.log?size=128M&count=8&prefix=SB"
 #     i_rules:
 #       - regexp: '.*'
 
+# # Depot example:
+# ncpio:
+#   - type: tcpc
+#     params: "localhost:8980"
+#     i_rules:
+#       - regexp: '.*"method": ?"(webrtc|history|ncp|emergency_stop)".*'
+#         invert: true
+#       - regexp: '.*"method".*'
+#     o_rules:
+#       - regexp: '.*'
+#   - type: tcpc
+#     params: "localhost:8981"
+#     i_rules:
+#       - regexp: '.*"method": ?"emergency_stop".*'
+#     o_rules:
+#       - regexp: '.*'
+#   - type: tcps
+#     params: "localhost:1208"
+#     i_rules:
+#       - regexp: '.*"method": ?"webrtc".*'
+#     o_rules:
+#       - regexp: '.*"method".*'
+#         invert: true
+#       - regexp: '.*'
+#   - type: mqtt
+#     params: "/etc/ncp/depot.yml"
+#     i_rules:
+#       - regexp: '.*'
+#     o_rules:
+#       - regexp: '.*'
+#   - type: logger
+#     params: "file:///var/log/ncp/depot.log?size=128M&count=8&prefix=SB"
+#     i_rules:
+#       - regexp: '.*'
 
 # JSONRPC 2.0 simulation
 # ncpio:
