@@ -22,6 +22,7 @@ import (
 )
 
 type Mqtt struct {
+	Online  string
 	Archive *history.Archive
 	Client  *paho.Client
 	Connect *paho.Connect
@@ -57,6 +58,7 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 	sessionExpiryInterval := uint32(7200)
 
 	return &Mqtt{
+		Online:  "online",
 		Archive: history.New(128),
 
 		I:      i,
@@ -251,7 +253,7 @@ func (t *Mqtt) doRun(parent context.Context) {
 	}
 
 	defer t.setStatus("offline")
-	t.setStatus("online")
+	t.setStatus(t.Online)
 
 	for {
 		select {
@@ -328,11 +330,12 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 		}
 
 		if rpc.Method == "ncp_online" {
-			t.setStatus("online")
+			t.Online = "online"
 		}
 		if rpc.Method == "ncp_offline" {
-			t.setStatus("offline")
+			t.Online = "offline"
 		}
+		t.setStatus(t.Online)
 
 	} else {
 		//fmt.Println("[Tran]: ", string(raw))
