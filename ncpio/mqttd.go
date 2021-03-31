@@ -88,6 +88,8 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 					} else if r := jsonrpc.ParseObject([]byte(data)); r.Type == jsonrpc.TypeSuccess || r.Type == jsonrpc.TypeErrors {
 						cache <- []byte(data)
 					}
+				} else if rpc.Type == jsonrpc.TypeNotify {
+						o <- p.Payload
 				}
 			}),
 		}),
