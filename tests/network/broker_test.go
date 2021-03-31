@@ -21,7 +21,13 @@ func cmdRun(str string) {
 	}
 }
 
-func TestBroker(t *testing.T) {
+// Disable This test
+// This test restore session
+// Need:
+// - mqtt sessionExpiryInterval
+// - CleanStart:  false
+func testBroker(t *testing.T) {
+//func TestBroker(t *testing.T) {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	id := "000"
 	mqttRpcRecv, mqttRpcSend := "nodes/%s/rpc/recv", "nodes/%s/rpc/send"
