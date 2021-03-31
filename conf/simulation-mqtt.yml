@@ -1,0 +1,16 @@
+# JSONRPC 2.0 mqtt simulation
+
+ncpio:
+  - type: mqtt
+    params: "conf/mqtt.yml"
+    i_rules:
+      - regexp: '.*'
+    o_rules:
+      - regexp: '.*'
+  - type: jsonrpc2
+    params: "233"
+    i_rules:
+      - regexp: '.*'
+    o_rules:
+      - regexp: '.*'
+

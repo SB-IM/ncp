@@ -1,0 +1,31 @@
+mqttd:
+  id: 1
+  static:
+    link_id: 2
+    lat: "22.6876423001"
+    lng: "114.2248673001"
+    alt: "10088.0001"
+  client: "node-%s"
+  status:  "nodes/%s/status"
+  network: "nodes/%s/network"
+  # broker: "mqtt[s]://[username][:password]@host.domain[:port]"
+  broker: "mqtt://localhost:1883"
+  rpc :
+    i: "nodes/%s/rpc/recv"
+    o: "nodes/%s/rpc/send"
+  gtran:
+    prefix: "nodes/%s/msg/%s"
+  trans:
+    wether:
+      retain: true
+      qos: 0
+    battery:
+      retain: true
+      qos: 0
+    sensor:
+      retain: true
+      qos: 1
+    notification:
+      retain: false
+      qos: 2
+
