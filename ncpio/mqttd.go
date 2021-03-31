@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+
 	//"os"
 	"strconv"
 	"strings"
 	"time"
 
+	lrucache "sb.im/ncp/cache"
 	"sb.im/ncp/history"
 	"sb.im/ncp/util"
 
@@ -27,6 +29,7 @@ type Mqtt struct {
 	Client  *paho.Client
 	Connect *paho.Connect
 	Config  *MqttdConfig
+	lru     *lrucache.LRUCache
 	status  *NodeStatus
 	cache   chan []byte
 	I       <-chan []byte
@@ -52,6 +55,7 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 		Status: config.Static,
 	}
 	raw, _ := json.Marshal(status.SetOnline("neterror"))
+	lru := lrucache.NewLRUCache(128)
 	cache := make(chan []byte, 128)
 
 	// 2h
@@ -59,6 +63,7 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 
 	return &Mqtt{
 		Online:  "online",
+		lru:     &lru,
 		Archive: history.New(128),
 
 		I:      i,
@@ -69,10 +74,20 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 		Client: paho.NewClient(paho.ClientConfig{
 			ClientID: fmt.Sprint(config.Client, config.ID),
 			Router: paho.NewSingleHandlerRouter(func(p *paho.Publish) {
-				if jsonrpc.ParseObject(p.Payload).Method == "history" {
+				if rpc := jsonrpc.ParseObject(p.Payload); rpc.Method == "history" {
 					cache <- p.Payload
-				} else {
-					o <- p.Payload
+
+				// Only Record Jsonrpc Request
+				} else if rpc.Type == jsonrpc.TypeRequest {
+					// Same message filtering
+					if data := lru.Get(rpc.ID.String()); data == "" {
+						lru.Put(rpc.ID.String(), string(p.Payload))
+						o <- p.Payload
+
+					// jsonrpc is Idempotent
+					} else if r := jsonrpc.ParseObject([]byte(data)); r.Type == jsonrpc.TypeSuccess || r.Type == jsonrpc.TypeErrors {
+						cache <- []byte(data)
+					}
 				}
 			}),
 		}),
@@ -278,6 +293,9 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 		//fmt.Println("[RES]: ", string(raw))
 		// {"jsonrpc":"2.0","result":"ok","id":"test.0-1607482556696-0"}
 		// {"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":"test.0-99991607483766.0"}
+
+		// Idempotent Record result
+		t.lru.Put(rpc.ID.String(), string(raw))
 
 		res, err := t.Client.Publish(ctx, &paho.Publish{
 			Payload: raw,
