@@ -41,7 +41,7 @@ test-integration:
 	go test ./tests/integration
 
 test:
-	go test ./ncpio ./util ./history -cover
+	go test ./ncpio ./util ./history ./cache -cover
 
 # \(statements\)(?:\s+)?(\d+(?:\.\d+)?%)
 # https://stackoverflow.com/questions/61246686/go-coverage-over-multiple-package-and-gitlab-coverage-badge
