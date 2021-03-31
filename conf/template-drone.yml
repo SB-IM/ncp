@@ -29,18 +29,18 @@ mqttd:
       retain: false
       qos: 2
 
-# type: tcps / tcpc / mqtt / logger / jsonrpc2 / api
+# Drone example:
 ncpio:
   - type: tcpc
-    params: "localhost:8980"
+    params: "localhost:9234"
     i_rules:
-      - regexp: '.*"method": ?"(webrtc|history|ncp)".*'
+      - regexp: '.*"method": ?"(webrtc|history)".*'
         invert: true
       - regexp: '.*"method".*'
     o_rules:
       - regexp: '.*'
   - type: tcps
-    params: "localhost:1208"
+    params: "localhost:1207"
     i_rules:
       - regexp: '.*"method": ?"webrtc".*'
     o_rules:
@@ -48,13 +48,13 @@ ncpio:
         invert: true
       - regexp: '.*'
   - type: mqtt
-    params: "config.yml"
+    params: "/etc/ncp/drone.yml"
     i_rules:
       - regexp: '.*'
     o_rules:
       - regexp: '.*'
   - type: logger
-    params: "file:///tmp/ncp/test.log?size=128M&count=8&prefix=SB"
+    params: "file:///var/log/ncp/drone.log?size=128M&count=8&prefix=SB"
     i_rules:
       - regexp: '.*'
 

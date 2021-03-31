@@ -29,14 +29,20 @@ mqttd:
       retain: false
       qos: 2
 
-# type: tcps / tcpc / mqtt / logger / jsonrpc2 / api
+# Depot example:
 ncpio:
   - type: tcpc
     params: "localhost:8980"
     i_rules:
-      - regexp: '.*"method": ?"(webrtc|history|ncp)".*'
+      - regexp: '.*"method": ?"(webrtc|history|ncp|emergency_stop)".*'
         invert: true
       - regexp: '.*"method".*'
+    o_rules:
+      - regexp: '.*'
+  - type: tcpc
+    params: "localhost:8981"
+    i_rules:
+      - regexp: '.*"method": ?"emergency_stop".*'
     o_rules:
       - regexp: '.*'
   - type: tcps
@@ -48,13 +54,13 @@ ncpio:
         invert: true
       - regexp: '.*'
   - type: mqtt
-    params: "config.yml"
+    params: "/etc/ncp/depot.yml"
     i_rules:
       - regexp: '.*'
     o_rules:
       - regexp: '.*'
   - type: logger
-    params: "file:///tmp/ncp/test.log?size=128M&count=8&prefix=SB"
+    params: "file:///var/log/ncp/depot.log?size=128M&count=8&prefix=SB"
     i_rules:
       - regexp: '.*'
 
