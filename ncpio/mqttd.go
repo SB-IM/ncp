@@ -254,7 +254,7 @@ func (t *Mqtt) doRun(parent context.Context) {
 	res, err := t.Client.Subscribe(ctx, &paho.Subscribe{
 		Subscriptions: map[string]paho.SubscribeOptions{
 			fmt.Sprintf(t.Config.Rpc.O, t.Config.ID): {
-				QoS: 2,
+				QoS: 0,
 				//RetainHandling    byte
 				//NoLocal           bool
 				//RetainAsPublished bool
@@ -303,7 +303,7 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 		res, err := t.Client.Publish(ctx, &paho.Publish{
 			Payload: raw,
 			Topic:   fmt.Sprintf(t.Config.Rpc.I, t.Config.ID),
-			QoS:     2,
+			QoS:     0,
 		})
 
 		if err != nil {
