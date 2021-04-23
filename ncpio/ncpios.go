@@ -5,7 +5,8 @@ import (
 )
 
 type NcpIOs struct {
-	IO []*NcpIO
+	IO      []*NcpIO
+	Debuger Debuger
 }
 
 func NewNcpIOs(configs []Config) *NcpIOs {
@@ -14,7 +15,8 @@ func NewNcpIOs(configs []Config) *NcpIOs {
 		ncps[index] = NewNcpIO(index, &config)
 	}
 	return &NcpIOs{
-		IO: ncps,
+		IO:      ncps,
+		Debuger: NoDebuger{},
 	}
 }
 
@@ -30,7 +32,9 @@ func (n *NcpIOs) Run(ctx context.Context) {
 		go io.Run(ctx)
 		go func(ncpio *NcpIO) {
 			for data := range ncpio.IO.O {
+				n.Debuger.Printf("<%s> RECV: %s", ncpio.Name, data)
 				if Filter(ncpio.ORules, data) {
+					n.Debuger.Printf("<%s> BROADCAST: %s", ncpio.Name, data)
 					hub <- ncpData{
 						Name: ncpio.Name,
 						Data: data,
@@ -52,6 +56,8 @@ func (n *NcpIOs) Run(ctx context.Context) {
 			if !Filter(io.IRules, raw.Data) {
 				continue
 			}
+
+			n.Debuger.Printf("<%s> SEND: %s", io.Name, raw.Data)
 
 			select {
 			case io.IO.I <- raw.Data:

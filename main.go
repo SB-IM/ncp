@@ -20,6 +20,7 @@ func main() {
 	config_path := "config.yml"
 
 	help := flag.Bool("h", false, "this help")
+	debug := flag.Bool("debug", false, "use debug mode")
 	flag.StringVar(&config_path, "c", "config.yml", "set configuration file")
 
 	show_version := flag.Bool("v", false, "show version")
@@ -49,7 +50,11 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go ncpio.NewNcpIOs(config.NcpIO).Run(ctx)
+	ncp := ncpio.NewNcpIOs(config.NcpIO)
+	if *debug {
+		ncp.Debuger = log.New(os.Stdout, "[NCPIO] ", log.LstdFlags)
+	}
+	go ncp.Run(ctx)
 
 	// Wait mqttd server startup && sub topic on broker
 	time.Sleep(3 * time.Millisecond)
