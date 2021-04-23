@@ -13,11 +13,8 @@ type MqttdConfig struct {
 	Network string
 	Broker  string
 	Static  *StaticStatus
-	Rpc     struct {
-		I string
-		O string
-	}
-	Gtran struct {
+	Rpc     RpcIO
+	Gtran   struct {
 		Prefix string
 	}
 	Trans map[string]struct {
@@ -26,10 +23,24 @@ type MqttdConfig struct {
 	}
 }
 
+type RpcIO struct {
+	QoS byte
+	LRU int
+	I   string
+	O   string
+}
+
 func loadMqttConfigFromFile(file string) (*MqttdConfig, error) {
 	config := struct {
 		Mqttd *MqttdConfig
-	}{}
+	}{
+		Mqttd: &MqttdConfig{
+			Rpc: RpcIO{
+				QoS: 0,
+				LRU: 128,
+			},
+		},
+	}
 
 	configFile, err := ioutil.ReadFile(file)
 	if err != nil {

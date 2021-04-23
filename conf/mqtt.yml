@@ -10,7 +10,9 @@ mqttd:
   network: "nodes/%s/network"
   # broker: "mqtt[s]://[username][:password]@host.domain[:port]"
   broker: "mqtt://localhost:1883"
-  rpc :
+  rpc:
+    qos: 0
+    lru: 128
     i: "nodes/%s/rpc/recv"
     o: "nodes/%s/rpc/send"
   gtran:

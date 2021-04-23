@@ -55,7 +55,7 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 		Status: config.Static,
 	}
 	raw, _ := json.Marshal(status.SetOnline("neterror"))
-	lru := lrucache.NewLRUCache(128)
+	lru := lrucache.NewLRUCache(config.Rpc.LRU)
 	cache := make(chan []byte, 128)
 
 	// 2h
@@ -254,7 +254,7 @@ func (t *Mqtt) doRun(parent context.Context) {
 	res, err := t.Client.Subscribe(ctx, &paho.Subscribe{
 		Subscriptions: map[string]paho.SubscribeOptions{
 			fmt.Sprintf(t.Config.Rpc.O, t.Config.ID): {
-				QoS: 0,
+				QoS: t.Config.Rpc.QoS,
 				//RetainHandling    byte
 				//NoLocal           bool
 				//RetainAsPublished bool
@@ -303,7 +303,7 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 		res, err := t.Client.Publish(ctx, &paho.Publish{
 			Payload: raw,
 			Topic:   fmt.Sprintf(t.Config.Rpc.I, t.Config.ID),
-			QoS:     0,
+			QoS:     t.Config.Rpc.QoS,
 		})
 
 		if err != nil {
