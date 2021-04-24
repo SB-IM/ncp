@@ -49,20 +49,7 @@ ncp -c config.yml
 
 ## Architecture design
 
-```sh
-Cloud -------------- Mqtt broker
-                      |
-                      |
-                      |
-jsonrpc2 simulation -- ncp --------- logger
-                    /      \
-                   /        \
-                  /          \
-           socket client      socket server
-           jsonrpc            jsonrpc
-          airctl/dockctl      startlight
-
-```
+![architecture](docs/ncp-architecture.svg)
 
 ## NcpIO
 
@@ -96,6 +83,8 @@ ncpio:
 ```
 
 ### Rules
+
+![ncpio-rules](docs/ncp-ncpio.svg)
 
 有两种：
 
@@ -274,9 +263,7 @@ yaml 是有上下文的，所以没有像 json 一样
 
 ## mqttd
 
-```sh
-ncpio <--> mqtt <--> mqttd <- - - - -> mqtt broker
-```
+![mqttd](docs/ncp-mqttd.svg)
 
 通过 IO 模块收到的消息会到达这里
 
@@ -371,15 +358,6 @@ mqtt 的 `qos` 会反复确认包消息到达（`qos` 是对于 broker ，两个
 这是一个内置的模块，收到的消息会判断是非为 jsonrpc ，如果是 jsonrpc 消息会以 rpc 方式连接 mqtt broker
 
 如果不是 jsonrpc 就会经过这个模块，这里面数据是单向的
-
-```sh
-                build-in
-               /      ｜
-mqtt <--> mqttd <--> jsonrpc <- - - - -> broker
-               \                         /
-                \                       /
-                 trans --------------->
-```
 
 tran socket recv
 

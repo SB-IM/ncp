@@ -49,20 +49,7 @@ ncp -c config.yml
 
 ## Architecture design
 
-```sh
-Cloud -------------- Mqtt broker
-                      |
-                      |
-                      |
-jsonrpc2 simulation -- ncp --------- logger
-                    /      \
-                   /        \
-                  /          \
-           socket client      socket server
-           jsonrpc            jsonrpc
-          airctl/dockctl      startlight
-
-```
+![architecture](docs/ncp-architecture.svg)
 
 ## NcpIO
 
@@ -91,6 +78,8 @@ ncpio:
 ```
 
 ### Rules
+
+![ncpio-rules](docs/ncp-ncpio.svg)
 
 * `o_rules` output the io rule (after recv)
 * `i_rules` input the io rule (before send)
@@ -267,9 +256,7 @@ So mqtt's params are specified as a path
 
 ## mqttd
 
-```sh
-ncpio <--> mqtt <--> mqttd <- - - - -> mqtt broker
-```
+![mqttd](docs/ncp-mqttd.svg)
 
 Messages received through the IO module will arrive here
 
@@ -362,15 +349,6 @@ It is recommended that the demo use mqtt's own qos. product environment uses `LR
 The received message will be judged as non-jsonrpc, if it is jsonrpc message will connect to mqtt broker in rpc way
 
 If it is not jsonrpc, it will go through this module, which is a one-way data
-
-```sh
-                build-in
-               /      ｜
-mqtt <--> mqttd <--> jsonrpc <- - - - -> broker
-               \                         /
-                \                       /
-                 trans --------------->
-```
 
 tran socket recv
 
