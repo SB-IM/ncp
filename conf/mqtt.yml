@@ -1,13 +1,20 @@
 mqttd:
+  # Globally unique id
   id: 1
+  # metadata: key value
   static:
     link_id: 2
     lat: "22.6876423001"
     lng: "114.2248673001"
     alt: "10088.0001"
+  # MQTT client-ID Globally unique id
+  # '%s' Will be replaced with 'mqttd.id'
   client: "node-%s"
+  # status mqtt topic
   status:  "nodes/%s/status"
+  # network mqtt topic
   network: "nodes/%s/network"
+  # MQTT Broker address
   # broker: "mqtt[s]://[username][:password]@host.domain[:port]"
   broker: "mqtt://localhost:1883"
   rpc:
@@ -15,7 +22,9 @@ mqttd:
     lru: 128
     i: "nodes/%s/rpc/recv"
     o: "nodes/%s/rpc/send"
+  # 'gtran' is 'trans' global settings
   gtran:
+    # '%s, %s' Will be replaced with 'mqttd.id, mqttd.trans[key]'
     prefix: "nodes/%s/msg/%s"
   trans:
     wether:
