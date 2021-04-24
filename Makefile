@@ -13,7 +13,7 @@ build:
 	$(GOBUILD)
 
 run:
-	go run `ls *.go | grep -v _test.go`
+	go run `ls *.go | grep -v _test.go` -debug
 
 install:
 	install -Dm755 ncp -t ${PROFIX}/usr/bin/
