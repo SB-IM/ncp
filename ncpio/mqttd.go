@@ -237,7 +237,7 @@ func (t *Mqtt) doRun(parent context.Context) {
 	ctx, cancel := context.WithCancel(parent)
 	t.Client.OnDisconnect = func(p *paho.Disconnect) {
 		fmt.Println("OnDisconnect")
-		logger.Panicln(p)
+		logger.Println(p)
 		cancel()
 	}
 
