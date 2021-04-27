@@ -133,8 +133,8 @@ Type                 | Description
 [API](#api)          | build-in interface
 [tcpc](#tcpc)        | TCP socket client
 [tcps](#tcps)        | TCP socket server
-[jsonrpc2](#jsonrpc2)| Connect Mqtt Broker
-[logger](#logger)    | TCP socket server
+[jsonrpc2](#jsonrpc2)| JSONRPC 2.0 simulation
+[logger](#logger)    | Record message log
 [mqtt](#mqtt)        | Connect Mqtt Broker
 
 核心是六个 `IO` 模块，通过配置文件来定义不同的组合来实现不同的功能

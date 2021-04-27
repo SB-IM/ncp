@@ -126,8 +126,8 @@ Type                 | Description
 [API](#api)          | build-in interface
 [tcpc](#tcpc)        | TCP socket client
 [tcps](#tcps)        | TCP socket server
-[jsonrpc2](#jsonrpc2)| Connect Mqtt Broker
-[logger](#logger)    | TCP socket server
+[jsonrpc2](#jsonrpc2)| JSONRPC 2.0 simulation
+[logger](#logger)    | Record message log
 [mqtt](#mqtt)        | Connect Mqtt Broker
 
 
