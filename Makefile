@@ -1,11 +1,24 @@
 OS=
 ARCH=
+NAME=ncp
+BINDIR=bin
 PROFIX=
 VERSION=$(shell git describe --tags || echo "unknown version")
 BUILDTIME=$(shell date)
-GOBUILD=GOOS=$(OS) GOARCH=$(ARCH) \
-				go build -ldflags '-X "sb.im/ncp/constant.Version=$(VERSION)" \
+GOBUILD=go build -ldflags '-X "sb.im/ncp/constant.Version=$(VERSION)" \
 				-X "sb.im/ncp/constant.BuildTime=$(BUILDTIME)"'
+
+PLATFORM_LIST = \
+								darwin-amd64 \
+								linux-386 \
+								linux-amd64 \
+								linux-armv7 \
+								linux-armv8 \
+								freebsd-amd64
+
+WINDOWS_ARCH_LIST = \
+										windows-386 \
+										windows-amd64
 
 all: build
 
@@ -50,6 +63,33 @@ cover:
 	go tool cover -func profile.cov
 	@rm profile.cov
 
+darwin-amd64:
+	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
+
+linux-386:
+	GOARCH=386 GOOS=linux $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
+
+linux-amd64:
+	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
+
+linux-armv7:
+	GOARCH=arm GOOS=linux GOARM=7 $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
+
+linux-armv8:
+	GOARCH=arm64 GOOS=linux $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
+
+freebsd-amd64:
+	GOARCH=amd64 GOOS=freebsd $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
+
+windows-386:
+	GOARCH=386 GOOS=windows $(GOBUILD) -o $(BINDIR)/$(NAME)-$@.exe
+
+windows-amd64:
+	GOARCH=amd64 GOOS=windows $(GOBUILD) -o $(BINDIR)/$(NAME)-$@.exe
+
+releases: $(PLATFORM_LIST) $(WINDOWS_ARCH_LIST)
+
 clean:
 	go clean
+	rm $(BINDIR)/*
 
