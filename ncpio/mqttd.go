@@ -235,7 +235,7 @@ func (t *Mqtt) doRun(parent context.Context) {
 	t.Client.PingHandler = pinger
 
 	ctx, cancel := context.WithCancel(parent)
-	t.Client.OnDisconnect = func(p *paho.Disconnect) {
+	t.Client.OnServerDisconnect = func(p *paho.Disconnect) {
 		logger.Println("OnDisconnect: ", p)
 		cancel()
 	}
