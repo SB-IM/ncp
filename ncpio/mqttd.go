@@ -248,7 +248,13 @@ func (t *Mqtt) doRun(parent context.Context) {
 	}
 
 	defer logger.Println("MQTT Close")
-	t.Client.Connect(ctx, t.Connect)
+	if res, err := t.Client.Connect(ctx, t.Connect); err != nil {
+		if res != nil {
+			logger.Printf("%+v\n", res)
+		}
+		logger.Println("MQTT Connect failure: ", err)
+		return
+	}
 	logger.Println("MQTT Connected")
 
 	res, err := t.Client.Subscribe(ctx, &paho.Subscribe{
