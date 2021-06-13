@@ -236,14 +236,12 @@ func (t *Mqtt) doRun(parent context.Context) {
 
 	ctx, cancel := context.WithCancel(parent)
 	t.Client.OnDisconnect = func(p *paho.Disconnect) {
-		fmt.Println("OnDisconnect")
-		logger.Println(p)
+		logger.Println("OnDisconnect: ", p)
 		cancel()
 	}
 
 	t.Client.OnClientError = func(err error) {
-		fmt.Println("OnClientError")
-		logger.Println(err)
+		logger.Println("OnClientError: ", err)
 		cancel()
 	}
 
@@ -257,7 +255,7 @@ func (t *Mqtt) doRun(parent context.Context) {
 	}
 	logger.Println("MQTT Connected")
 
-	res, err := t.Client.Subscribe(ctx, &paho.Subscribe{
+	if res, err := t.Client.Subscribe(ctx, &paho.Subscribe{
 		Subscriptions: map[string]paho.SubscribeOptions{
 			fmt.Sprintf(t.Config.Rpc.O, t.Config.ID): {
 				QoS: t.Config.Rpc.QoS,
@@ -266,9 +264,7 @@ func (t *Mqtt) doRun(parent context.Context) {
 				//RetainAsPublished bool
 			},
 		},
-	})
-
-	if err != nil {
+	}); err != nil {
 		if res != nil {
 			logger.Printf("%+v\n", res)
 		}
@@ -352,7 +348,7 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 			rpc.Method = ""
 			rpc.Params = nil
 			data, _ := rpc.ToJSON()
-			fmt.Println(string(data))
+			logger.Printf("%s\n", data)
 			t.cache <- data
 		}
 
@@ -375,7 +371,7 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 			if !ok {
 				// TODO: 'opt' use Default
 			}
-			res, err := t.Client.Publish(ctx, &paho.Publish{
+			if res, err := t.Client.Publish(ctx, &paho.Publish{
 				Payload: data,
 				Topic:   fmt.Sprintf(t.Config.Gtran.Prefix, t.Config.ID, key),
 				QoS:     opt.QoS,
@@ -384,9 +380,7 @@ func (t *Mqtt) send(ctx context.Context, raw []byte) error {
 				//PacketID   uint16
 				//Duplicate  bool
 
-			})
-
-			if err != nil {
+			}); err != nil {
 				if res != nil {
 					logger.Printf("%+v\n", res)
 				}
@@ -405,14 +399,12 @@ func (t *Mqtt) setStatus(str string) error {
 		logger.Println(err)
 		return err
 	} else {
-		res, err := t.Client.Publish(context.Background(), &paho.Publish{
+		if res, err := t.Client.Publish(context.Background(), &paho.Publish{
 			Payload: raw,
 			Topic:   fmt.Sprintf(t.Config.Status, t.Config.ID),
 			QoS:     1,
 			Retain:  true,
-		})
-
-		if err != nil {
+		}); err != nil {
 			if res != nil {
 				logger.Printf("%+v\n", res)
 			}
