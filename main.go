@@ -40,6 +40,7 @@ func main() {
 		config_path = os.Getenv("NCP_CONF")
 	}
 	log.Println("load config: " + config_path)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	config, err := cfg.GetConfig(config_path)
 	if err != nil {
