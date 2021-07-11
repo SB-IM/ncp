@@ -5,7 +5,8 @@ BINDIR=bin
 PROFIX=
 VERSION=$(shell git describe --tags || echo "unknown version")
 BUILDTIME=$(shell date)
-GOBUILD=go build -ldflags '-X "sb.im/ncp/constant.Version=$(VERSION)" \
+GOBUILD=CGO_ENABLED=0 go build -trimpath \
+				-ldflags '-X "sb.im/ncp/constant.Version=$(VERSION)" \
 				-X "sb.im/ncp/constant.BuildTime=$(BUILDTIME)"'
 
 PLATFORM_LIST = \
@@ -23,7 +24,7 @@ WINDOWS_ARCH_LIST = \
 all: build
 
 build:
-	$(GOBUILD)
+	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD)
 
 run:
 	go run `ls *.go | grep -v _test.go` -debug
