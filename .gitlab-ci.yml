@@ -81,41 +81,41 @@ test emqx deb:
     - service emqx start
   extends: .test-integration
 
-packaging:
-  before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-
-  stage: deploy
-  script:
-    - apt-get update -y && apt-get install -y xz-utils
-    - tar -cJf - ./ | ssh build@api.sb.im -p 6001 'cd `bin/pre_build.sh ncp` && tar -xJf - && ~/bin/build.sh'
-  only:
-    - tags
-
-deploy_simulation:
-  before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo "$SIMULATION_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-
-  stage: deploy
-  script:
-    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/sbim/superdock/links/starlight.git".insteadOf git@gitlab.com:sbim/superdock/links/starlight.git
-    - git submodule sync && git submodule update --init
-    - make dep
-    - apt-get update -y && apt-get install -y xz-utils
-    - tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'rm -rf ncp && mkdir -p ncp && cd ncp && tar -xJf - && PATH="$HOME/go/bin:$PATH" make build && ../ncp_restart.sh'
-  only:
-    refs:
-      - master
+#packaging:
+#  before_script:
+#    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+#    - eval $(ssh-agent -s)
+#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+#    - mkdir -p ~/.ssh
+#    - chmod 700 ~/.ssh
+#    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+#    - chmod 644 ~/.ssh/known_hosts
+#
+#  stage: deploy
+#  script:
+#    - apt-get update -y && apt-get install -y xz-utils
+#    - tar -cJf - ./ | ssh build@api.sb.im -p 6001 'cd `bin/pre_build.sh ncp` && tar -xJf - && ~/bin/build.sh'
+#  only:
+#    - tags
+#
+#deploy_simulation:
+#  before_script:
+#    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+#    - eval $(ssh-agent -s)
+#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+#    - mkdir -p ~/.ssh
+#    - chmod 700 ~/.ssh
+#    - echo "$SIMULATION_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+#    - chmod 644 ~/.ssh/known_hosts
+#
+#  stage: deploy
+#  script:
+#    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/sbim/superdock/links/starlight.git".insteadOf git@gitlab.com:sbim/superdock/links/starlight.git
+#    - git submodule sync && git submodule update --init
+#    - make dep
+#    - apt-get update -y && apt-get install -y xz-utils
+#    - tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'rm -rf ncp && mkdir -p ncp && cd ncp && tar -xJf - && PATH="$HOME/go/bin:$PATH" make build && ../ncp_restart.sh'
+#  only:
+#    refs:
+#      - master
 
