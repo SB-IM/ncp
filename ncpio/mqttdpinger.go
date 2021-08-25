@@ -49,7 +49,13 @@ func (p *PingHandler) Start(c net.Conn, pt time.Duration) {
 	p.stop = make(chan struct{})
 	p.mu.Unlock()
 	checkTicker := time.NewTicker(pt / 4)
-	defer checkTicker.Stop()
+	defer func() {
+		checkTicker.Stop()
+		if err := p.conn.SetReadDeadline(time.Now().Add(pt / 4)); err != nil {
+			p.pingFailHandler(err)
+		}
+		p.pingFailHandler(fmt.Errorf("pinger stopped"))
+	} ()
 	for {
 		select {
 		case <-p.stop:
