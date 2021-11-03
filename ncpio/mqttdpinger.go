@@ -45,6 +45,8 @@ func NewPingHandler(client *paho.Client, topic string) *PingHandler {
 // the required interface function()
 func (p *PingHandler) Start(c net.Conn, pt time.Duration) {
 	p.mu.Lock()
+	p.sendCount = 0
+	p.recvCount = 0
 	p.conn = c
 	p.stop = make(chan struct{})
 	p.mu.Unlock()
@@ -78,6 +80,9 @@ func (p *PingHandler) Start(c net.Conn, pt time.Duration) {
 				atomic.AddInt32(&p.pingOutstanding, 1)
 				p.lastPing = time.Now()
 				p.sendCount++
+				if p.sendCount - p.recvCount > 3 {
+					return
+				}
 				p.debug.Println("pingHandler sending ping request")
 			}
 		}
