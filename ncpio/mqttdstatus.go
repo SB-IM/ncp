@@ -6,11 +6,11 @@ import (
 )
 
 type StaticStatus struct {
-	Link_id     int    `json:"link_id"`
-	Position_ok bool   `json:"position_ok"`
-	Lat         string `json:"lat"`
-	Lng         string `json:"lng"`
-	Alt         string `json:"alt"`
+	Link_id int    `json:"link_id"`
+	Type    string `json:"type"`
+	Lat     string `json:"lat"`
+	Lng     string `json:"lng"`
+	Alt     string `json:"alt"`
 }
 
 type NetworkStatus struct {

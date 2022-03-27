@@ -45,11 +45,19 @@ func NewPingHandler(client *paho.Client, topic string) *PingHandler {
 // the required interface function()
 func (p *PingHandler) Start(c net.Conn, pt time.Duration) {
 	p.mu.Lock()
+	p.sendCount = 0
+	p.recvCount = 0
 	p.conn = c
 	p.stop = make(chan struct{})
 	p.mu.Unlock()
 	checkTicker := time.NewTicker(pt / 4)
-	defer checkTicker.Stop()
+	defer func() {
+		checkTicker.Stop()
+		if err := p.conn.SetReadDeadline(time.Now().Add(pt / 4)); err != nil {
+			p.pingFailHandler(err)
+		}
+		p.pingFailHandler(fmt.Errorf("pinger stopped"))
+	} ()
 	for {
 		select {
 		case <-p.stop:
@@ -72,6 +80,9 @@ func (p *PingHandler) Start(c net.Conn, pt time.Duration) {
 				atomic.AddInt32(&p.pingOutstanding, 1)
 				p.lastPing = time.Now()
 				p.sendCount++
+				if p.sendCount - p.recvCount > 3 {
+					return
+				}
 				p.debug.Println("pingHandler sending ping request")
 			}
 		}
