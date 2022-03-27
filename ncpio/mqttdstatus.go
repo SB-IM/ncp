@@ -6,7 +6,7 @@ import (
 )
 
 type StaticStatus struct {
-	Link_id int    `json:"link_id"`
+	Link_id string `json:"link_id"`
 	Type    string `json:"type"`
 	Lat     string `json:"lat"`
 	Lng     string `json:"lng"`

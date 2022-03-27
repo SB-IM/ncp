@@ -26,7 +26,8 @@ func TestBroker(t *testing.T) {
 mqttd:
   id: ` + id + `
   static:
-    link_id: 1
+    link_id: "1"
+    type: "drone"
     lat: "22.6876423001"
     lng: "114.2248673001"
     alt: "10088.0001"

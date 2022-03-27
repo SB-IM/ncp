@@ -3,7 +3,8 @@ mqttd:
   id: 1
   # metadata: key value
   static:
-    link_id: 2
+    link_id: "2"
+    type: "drone"
     lat: "22.6876423001"
     lng: "114.2248673001"
     alt: "10088.0001"
