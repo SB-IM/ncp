@@ -32,7 +32,7 @@ func main() {
 	}
 
 	if *show_version {
-		fmt.Printf("Ncp %s %s %s %s\n", C.Version, runtime.GOOS, runtime.GOARCH, C.BuildTime)
+		fmt.Printf("Ncp %s %s %s %s %s\n", C.Version, C.Commit, runtime.GOOS, runtime.GOARCH, C.BuildTime)
 		return
 	}
 
