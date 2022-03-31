@@ -1,0 +1,28 @@
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    ldflags:
+      - -s -w
+      - -X "sb.im/ncp/constant.Version={{.Version}}"
+      - -X "sb.im/ncp/constant.Commit={{.Commit}}"
+      - -X "sb.im/ncp/constant.BuildTime={{.Date}}"
+
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^Merge'
+      - '^build'
+      - '^chore'
+      - '^docs'
+      - '^test'
+      - '^ci'
+
