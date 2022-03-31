@@ -1,9 +1,9 @@
-image: golang:1.13.1-buster
+image: golang:1.18-buster
 
 stages:
   - test
   - broker
-  - deploy
+  - artifact
 
 .gobuild:
   stage: test
@@ -29,6 +29,18 @@ go1.15:
   image: golang:1.15-buster
   extends: .gobuild
 
+go1.16:
+  image: golang:1.16-buster
+  extends: .gobuild
+
+go1.17:
+  image: golang:1.17-buster
+  extends: .gobuild
+
+go1.18:
+  image: golang:1.18-buster
+  extends: .gobuild
+
 .test-integration:
   script:
     - apt-get update -y && apt-get install -y mosquitto-clients
@@ -39,6 +51,9 @@ go1.15:
     - job: go1.13
     - job: go1.14
     - job: go1.15
+    - job: go1.16
+    - job: go1.17
+    - job: go1.18
   only:
     refs:
       - master
@@ -63,10 +78,10 @@ test emqx latest:
     MQTT: "emqx:1883"
   extends: .test-integration
 
-test emqx 4.2.6:
+test emqx 4.4.1:
   stage: broker
   services:
-    - name: emqx/emqx:4.2.6
+    - name: emqx/emqx:4.4.1
       alias: emqx
   variables:
     MQTT: "emqx:1883"
@@ -81,41 +96,25 @@ test emqx deb:
     - service emqx start
   extends: .test-integration
 
-#packaging:
-#  before_script:
-#    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-#    - eval $(ssh-agent -s)
-#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-#    - mkdir -p ~/.ssh
-#    - chmod 700 ~/.ssh
-#    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-#    - chmod 644 ~/.ssh/known_hosts
-#
-#  stage: deploy
-#  script:
-#    - apt-get update -y && apt-get install -y xz-utils
-#    - tar -cJf - ./ | ssh build@api.sb.im -p 6001 'cd `bin/pre_build.sh ncp` && tar -xJf - && ~/bin/build.sh'
-#  only:
-#    - tags
-#
-#deploy_simulation:
-#  before_script:
-#    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-#    - eval $(ssh-agent -s)
-#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-#    - mkdir -p ~/.ssh
-#    - chmod 700 ~/.ssh
-#    - echo "$SIMULATION_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-#    - chmod 644 ~/.ssh/known_hosts
-#
-#  stage: deploy
-#  script:
-#    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/sbim/superdock/links/starlight.git".insteadOf git@gitlab.com:sbim/superdock/links/starlight.git
-#    - git submodule sync && git submodule update --init
-#    - make dep
-#    - apt-get update -y && apt-get install -y xz-utils
-#    - tar -cJf - ./ | ssh pi@api.sb.im -p 6002 'rm -rf ncp && mkdir -p ncp && cd ncp && tar -xJf - && PATH="$HOME/go/bin:$PATH" make build && ../ncp_restart.sh'
-#  only:
-#    refs:
-#      - master
+build binary:
+  stage: artifact
+  script:
+    - make
+  artifacts:
+    paths:
+      - ncp
+    expire_in: 1 week
+
+build image branch:
+  image: docker:20.10.5
+  stage: artifact
+  services:
+    - docker:20.10.5-dind
+  before_script:
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
+  variables:
+    CONTAINER_IMAGE: ${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_NAME}:latest
+  script:
+    - docker build --tag ${CONTAINER_IMAGE} .
+    - docker push ${CONTAINER_IMAGE}
 
