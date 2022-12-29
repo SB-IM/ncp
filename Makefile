@@ -60,9 +60,8 @@ test:
 # \(statements\)(?:\s+)?(\d+(?:\.\d+)?%)
 # https://stackoverflow.com/questions/61246686/go-coverage-over-multiple-package-and-gitlab-coverage-badge
 cover:
-	go test ./ncpio ./util ./history -coverprofile profile.cov
-	go tool cover -func profile.cov
-	@rm profile.cov
+	go test ./ncpio ./util ./history ./cache -coverprofile=coverage.txt -covermode=atomic
+	go tool cover -func coverage.txt
 
 darwin-amd64:
 	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(BINDIR)/$(NAME)-$@

@@ -1,6 +1,7 @@
 config.yml
 ncp
 bin
+coverage.txt
 
 /log/*
 !/log/.keep
