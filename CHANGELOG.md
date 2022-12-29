@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2022-12-29
+
+### Add
+
+* Add `os.env` expand
+
+```yaml
+mqttd:
+  id: ${NCP_UUID}
+  static:
+    type: ${NCP_TYPE}
+  broker: ${NCP_MQTT_URL}
+```
+
+## [2.2.0] - 2022-04-01
+
+### Add
+
+* Add `type` in config
+* Add goreleaser
+
+### Change
+
+* Change (config) `Link_id` int to string
+
+### Fix
+
+* Fix mqtt auth
+
 ## [2.1.3] - 2021-07-12
 
 ### Add

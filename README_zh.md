@@ -3,6 +3,7 @@
 Edge gateway core communication service
 
 [![Build Status](https://github.com/sb-im/ncp/workflows/ci/badge.svg)](https://github.com/sb-im/ncp/actions?query=workflow%3Aci)
+[![codecov](https://codecov.io/gh/sb-im/ncp/branch/master/graph/badge.svg)](https://codecov.io/gh/sb-im/ncp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sb-im/ncp)](https://goreportcard.com/report/github.com/sb-im/ncp)
 [![Go Reference](https://pkg.go.dev/badge/github.com/sb-im/ncp.svg)](https://pkg.go.dev/github.com/sb-im/ncp)
 [![GitHub release](https://img.shields.io/github/tag/sb-im/ncp.svg?label=release)](https://github.com/sb-im/ncp/releases)
