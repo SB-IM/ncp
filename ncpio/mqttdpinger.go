@@ -57,7 +57,7 @@ func (p *PingHandler) Start(c net.Conn, pt time.Duration) {
 			p.pingFailHandler(err)
 		}
 		p.pingFailHandler(fmt.Errorf("pinger stopped"))
-	} ()
+	}()
 	for {
 		select {
 		case <-p.stop:
@@ -80,7 +80,7 @@ func (p *PingHandler) Start(c net.Conn, pt time.Duration) {
 				atomic.AddInt32(&p.pingOutstanding, 1)
 				p.lastPing = time.Now()
 				p.sendCount++
-				if p.sendCount - p.recvCount > 3 {
+				if p.sendCount-p.recvCount > 3 {
 					return
 				}
 				p.debug.Println("pingHandler sending ping request")

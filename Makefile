@@ -27,7 +27,7 @@ build:
 	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD)
 
 run:
-	go run `ls *.go | grep -v _test.go` -debug
+	go run main.go -debug
 
 install:
 	install -Dm755 ncp -t ${PROFIX}/usr/bin/

@@ -14,9 +14,9 @@ import (
 	"sb.im/ncp/history"
 	"sb.im/ncp/util"
 
-	"github.com/sb-im/jsonrpc-lite"
 	packets "github.com/eclipse/paho.golang/packets"
 	paho "github.com/eclipse/paho.golang/paho"
+	"github.com/sb-im/jsonrpc-lite"
 
 	logger "log"
 )
@@ -75,19 +75,19 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 				if rpc := jsonrpc.ParseObject(p.Payload); rpc.Method == "history" {
 					cache <- p.Payload
 
-				// Only Record Jsonrpc Request
+					// Only Record Jsonrpc Request
 				} else if rpc.Type == jsonrpc.TypeRequest {
 					// Same message filtering
 					if data := lru.Get(rpc.ID.String()); data == "" {
 						lru.Put(rpc.ID.String(), string(p.Payload))
 						o <- p.Payload
 
-					// jsonrpc is Idempotent
+						// jsonrpc is Idempotent
 					} else if r := jsonrpc.ParseObject([]byte(data)); r.Type == jsonrpc.TypeSuccess || r.Type == jsonrpc.TypeErrors {
 						cache <- []byte(data)
 					}
 				} else if rpc.Type == jsonrpc.TypeNotify {
-						o <- p.Payload
+					o <- p.Payload
 				}
 			}),
 		}),
@@ -104,7 +104,7 @@ func NewMqtt(params string, i <-chan []byte, o chan<- []byte) *Mqtt {
 			// https://stackoverflow.com/questions/65314401/cannot-connect-to-mosquitto-2-0-with-paho-library
 			PasswordFlag: true,
 			UsernameFlag: true,
-			ClientID:    fmt.Sprintf(config.Client, config.ID),
+			ClientID:     fmt.Sprintf(config.Client, config.ID),
 			//CleanStart:  false,
 			CleanStart: true,
 			// interval 10s

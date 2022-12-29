@@ -79,4 +79,3 @@ func (this *LRUCache) removeTail() *DLinkedNode {
 	this.removeNode(node)
 	return node
 }
-
