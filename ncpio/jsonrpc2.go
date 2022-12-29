@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/SB-IM/jsonrpc-lite"
+	"github.com/sb-im/jsonrpc-lite"
 	logger "log"
 )
 

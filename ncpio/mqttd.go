@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-
-	//"os"
 	"strconv"
 	"strings"
 	"time"
@@ -16,7 +14,7 @@ import (
 	"sb.im/ncp/history"
 	"sb.im/ncp/util"
 
-	"github.com/SB-IM/jsonrpc-lite"
+	"github.com/sb-im/jsonrpc-lite"
 	packets "github.com/eclipse/paho.golang/packets"
 	paho "github.com/eclipse/paho.golang/paho"
 

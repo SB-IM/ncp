@@ -2,11 +2,11 @@
 
 Edge gateway core communication service
 
-[![Build Status](https://github.com/SB-IM/ncp/workflows/ci/badge.svg)](https://github.com/SB-IM/ncp/actions?query=workflow%3Aci)
-[![Go Report Card](https://goreportcard.com/badge/github.com/SB-IM/ncp)](https://goreportcard.com/report/github.com/SB-IM/ncp)
-[![Go Reference](https://pkg.go.dev/badge/github.com/SB-IM/ncp.svg)](https://pkg.go.dev/github.com/SB-IM/ncp)
-[![GitHub release](https://img.shields.io/github/tag/SB-IM/ncp.svg?label=release)](https://github.com/SB-IM/ncp/releases)
-[![license](https://img.shields.io/github/license/SB-IM/ncp.svg?maxAge=2592000)](https://github.com/SB-IM/ncp/blob/master/LICENSE)
+[![Build Status](https://github.com/sb-im/ncp/workflows/ci/badge.svg)](https://github.com/sb-im/ncp/actions?query=workflow%3Aci)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sb-im/ncp)](https://goreportcard.com/report/github.com/sb-im/ncp)
+[![Go Reference](https://pkg.go.dev/badge/github.com/sb-im/ncp.svg)](https://pkg.go.dev/github.com/sb-im/ncp)
+[![GitHub release](https://img.shields.io/github/tag/sb-im/ncp.svg?label=release)](https://github.com/sb-im/ncp/releases)
+[![license](https://img.shields.io/github/license/sb-im/ncp.svg?maxAge=2592000)](https://github.com/sb-im/ncp/blob/master/LICENSE)
 
 [README](README.md) | [中文文档](README_zh.md)
 

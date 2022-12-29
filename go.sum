@@ -1,5 +1,3 @@
-github.com/SB-IM/jsonrpc-lite v0.1.0 h1:56BY9IL+oLi+aKW72EiusQ7hwHb7OnUYd/luuIPglcw=
-github.com/SB-IM/jsonrpc-lite v0.1.0/go.mod h1:wMW5By1MvoRLQEXOKjrHXFu3PN+luff0glznJUcAxlM=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/eclipse/paho.golang v0.9.1-0.20210603152646-e71c343e37bd h1:9kwu47xXrRZObfBpYGP43RC4Q3KV7D9m1JM7PN5xnN8=
@@ -23,6 +21,8 @@ github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/sb-im/jsonrpc-lite v0.2.0 h1:r45VX/mESjt6SYBX7V6yIDr3EUWi40EjQIXzz0B0lzo=
+github.com/sb-im/jsonrpc-lite v0.2.0/go.mod h1:dHV+dbbKl+2+/pDgAavKuAWdEfjGWGck0M7Au+Tkj8Q=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=

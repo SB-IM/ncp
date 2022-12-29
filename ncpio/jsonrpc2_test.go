@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/SB-IM/jsonrpc-lite"
+	"github.com/sb-im/jsonrpc-lite"
 )
 
 func TestJsonrpc2(t *testing.T) {
