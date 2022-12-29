@@ -1,4 +1,4 @@
-image: golang:1.18-buster
+image: golang:1.19-buster
 
 stages:
   - test
@@ -41,6 +41,10 @@ go1.18:
   image: golang:1.18-buster
   extends: .gobuild
 
+go1.19:
+  image: golang:1.19-buster
+  extends: .gobuild
+
 .test-integration:
   script:
     - apt-get update -y && apt-get install -y mosquitto-clients
@@ -54,6 +58,7 @@ go1.18:
     - job: go1.16
     - job: go1.17
     - job: go1.18
+    - job: go1.19
   only:
     refs:
       - master
