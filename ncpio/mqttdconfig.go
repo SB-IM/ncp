@@ -1,9 +1,7 @@
 package ncpio
 
 import (
-	"io/ioutil"
-
-	yaml "gopkg.in/yaml.v2"
+	"sb.im/ncp/util"
 )
 
 type MqttdConfig struct {
@@ -42,11 +40,5 @@ func loadMqttConfigFromFile(file string) (*MqttdConfig, error) {
 		},
 	}
 
-	configFile, err := ioutil.ReadFile(file)
-	if err != nil {
-		return config.Mqttd, err
-	} else {
-		err = yaml.Unmarshal(configFile, &config)
-		return config.Mqttd, err
-	}
+	return config.Mqttd, util.LoadConfig(file, &config)
 }

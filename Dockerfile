@@ -14,7 +14,10 @@ RUN make build
 FROM alpine AS bin
 
 COPY --from=builder /src/ncp /usr/bin/ncp
+COPY --from=builder /src/conf/sitl.yml /etc/ncp/config.yml
 
 WORKDIR /var/lib/ncp
 
 ENTRYPOINT ["/usr/bin/ncp"]
+
+CMD ["-c", "/etc/ncp/config.yml"]

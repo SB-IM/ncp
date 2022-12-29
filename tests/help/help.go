@@ -1,13 +1,12 @@
 package help
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
 	"sb.im/ncp/ncpio"
+	"sb.im/ncp/util"
 )
 
 type Config struct {
@@ -16,13 +15,7 @@ type Config struct {
 
 func GetConfig(str string) (Config, error) {
 	config := Config{}
-	configFile, err := ioutil.ReadFile(str)
-	if err != nil {
-		return config, err
-	} else {
-		err = yaml.Unmarshal(configFile, &config)
-		return config, err
-	}
+	return config, util.LoadConfig(str, &config)
 }
 
 func GenerateMqttConfig(name string, config []byte) {
