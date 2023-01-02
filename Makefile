@@ -3,11 +3,15 @@ ARCH=
 NAME=ncp
 BINDIR=bin
 PROFIX=
+COMMIT=$(shell git rev-parse HEAD)
 VERSION=$(shell git describe --tags || echo "unknown version")
-BUILDTIME=$(shell date)
-GOBUILD=CGO_ENABLED=0 go build -trimpath \
-				-ldflags '-X "sb.im/ncp/constant.Version=$(VERSION)" \
-				-X "sb.im/ncp/constant.BuildTime=$(BUILDTIME)"'
+BUILDTIME=$(shell date +%FT%T%z)
+LD_FLAGS='\
+				 -X "sb.im/ncp/constant.Commit=$(COMMIT)" \
+				 -X "sb.im/ncp/constant.Version=$(VERSION)" \
+				 -X "sb.im/ncp/constant.BuildTime=$(BUILDTIME)" \
+				 '
+GOBUILD=CGO_ENABLED=0 go build -trimpath -ldflags $(LD_FLAGS)
 
 PLATFORM_LIST = \
 								darwin-amd64 \
