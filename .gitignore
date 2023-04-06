@@ -2,6 +2,7 @@ config.yml
 ncp
 bin
 coverage.txt
+dist
 
 /log/*
 !/log/.keep

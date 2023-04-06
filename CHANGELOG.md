@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2023-04-06
+
+### Add
+
+* releaser deb
+* add exec
+
+exec system command. **NOTE: This is very dangerous!**
+
+```yaml
+  - type: exec
+    params: "echo"
+    i_rules:
+      - regexp: '.*"method": ?"exec".*'
+    o_rules:
+      - regexp: '.*'
+```
+
+This `params` is command, example: `params: "/bin/sh"`
+
+This Recvice JSONRPC, ignore `jsonrpc.method`. **jsonrpc.method is use of only match**
+
+For example:
+
+`params: "echo"`. jsonrpc2 `{"jsonrpc":"2.0","method":"exec","params":["-n", "xxx"],"id":"x"}`
+
+Finally exec: `echo -n xxx`
+
 ## [2.3.0] - 2022-12-29
 
 ### Add
