@@ -29,6 +29,7 @@ Edge gateway core communication service
   * [API](#api)
   * [tcpc](#tcpc)
   * [tcps](#tcps)
+  * [exec](#exec)
   * [jsonrpc2](#jsonrpc2)
   * [logger](#logger)
   * [mqtt](#mqtt)
@@ -219,6 +220,37 @@ tcpc, tcps 消息分割使用 `\n` 作为分隔符，会自动 `chomp` `\r\n` �
 作为一个 tcp server 去等待 client 连接，反向 tcp 工作模式
 
 注意：同一时刻只能连接一个 client。多个 client 同时连接会等到之前的 close 后再处理新连接
+
+### exec
+
+执行系统命令。**注意：这个功能很危险，慎重使用！**
+
+```yaml
+  - type: exec
+    params: "echo"
+    i_rules:
+      - regexp: '.*"method": ?"exec".*'
+    o_rules:
+      - regexp: '.*'
+```
+
+为了限制这个功能的能力，命令写在配置的 `params` 里。
+
+JSONRPC 的只提供 命令的参数，`jsonrpc.method` 会忽略掉。
+
+`jsonrpc.method` 只用来匹配命令。可以随意自定义
+
+当然，可能很容易突破这种限制，比如这样来执行 sh： `params: "/bin/sh"`
+
+比如：`params: "echo"`
+
+jsonrpc2 为：
+
+```json
+{"jsonrpc":"2.0","method":"exec","params":["-n", "xxx"],"id":"x"}
+```
+
+最终会执行: `echo -n xxx`
 
 ### jsonrpc2
 

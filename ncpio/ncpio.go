@@ -26,7 +26,7 @@ type IO struct {
 
 type Config struct {
 	Name string `json:"name" yaml:"name"`
-	// tcps / tcpc / mqtt / history / logger / jsonrpc2 / build-in / api
+	// tcps / tcpc / mqtt / history / logger / exec / jsonrpc2 / build-in / api
 	Type   string `json:"type" yaml:"type"`
 	Params string `json:"params" yaml:"params"`
 	IRules []Rule `json:"i_rules" yaml:"i_rules"`
@@ -47,6 +47,8 @@ func NewNcpIO(id int, config *Config) *NcpIO {
 			return NewTcpc(config.Params, i, o).Run
 		case "tcps":
 			return NewTcpc(config.Params, i, o).Listen
+		case "exec":
+			return NewExecutor(config.Params, i, o).Run
 		case "jsonrpc2":
 			return NewJsonrpc2(config.Params, i, o).Run
 		case "logger":

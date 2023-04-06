@@ -29,6 +29,7 @@ This is a communication module, and there is no specific use specified
   * [API](#api)
   * [tcpc](#tcpc)
   * [tcps](#tcps)
+  * [exec](#exec)
   * [jsonrpc2](#jsonrpc2)
   * [logger](#logger)
   * [mqtt](#mqtt)
@@ -214,6 +215,29 @@ As a tcp server to wait for client connections, reverse tcp mode of operation
 
 Note: Only one client can be connected at a time.
 multiple clients connected at the same time will wait until the previous close before handling new connections
+
+### exec
+
+exec system command. **NOTE: This is very dangerous!**
+
+```yaml
+  - type: exec
+    params: "echo"
+    i_rules:
+      - regexp: '.*"method": ?"exec".*'
+    o_rules:
+      - regexp: '.*'
+```
+
+This `params` is command, example: `params: "/bin/sh"`
+
+This Recvice JSONRPC, ignore `jsonrpc.method`. **jsonrpc.method is use of only match**
+
+For example:
+
+`params: "echo"`. jsonrpc2 `{"jsonrpc":"2.0","method":"exec","params":["-n", "xxx"],"id":"x"}`
+
+Finally exec: `echo -n xxx`
 
 ### jsonrpc2
 

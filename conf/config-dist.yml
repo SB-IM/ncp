@@ -32,14 +32,20 @@ mqttd:
       retain: false
       qos: 2
 
-# type: tcps / tcpc / mqtt / logger / jsonrpc2 / api
+# type: tcps / tcpc / mqtt / exec / logger / jsonrpc2 / api
 ncpio:
   - type: tcpc
     params: "localhost:8980"
     i_rules:
-      - regexp: '.*"method": ?"(webrtc|history|ncp)".*'
+      - regexp: '.*"method": ?"(webrtc|history|ncp|exec)".*'
         invert: true
       - regexp: '.*"method".*'
+    o_rules:
+      - regexp: '.*'
+  - type: exec
+    params: "echo"
+    i_rules:
+      - regexp: '.*"method": ?"exec".*'
     o_rules:
       - regexp: '.*'
   - type: tcps
