@@ -42,7 +42,8 @@ ncpio:
   - type: jsonrpc2
     params: "233"
     i_rules:
-      - regexp: '.*'
+      - regexp: '.*"method".*'
     o_rules:
-      - regexp: '.*'
+      - regexp: '.*"method".*'
+        invert: true
 

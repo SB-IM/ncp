@@ -34,7 +34,7 @@ func (n *NcpIOs) Run(ctx context.Context) {
 			for data := range ncpio.IO.O {
 				n.Debuger.Printf("<%s> RECV: %s", ncpio.Name, data)
 				if Filter(ncpio.ORules, data) {
-					n.Debuger.Printf("<%s> BROADCAST: %s", ncpio.Name, data)
+					n.Debuger.Printf("<%s> CAST: %s", ncpio.Name, data)
 					hub <- ncpData{
 						Name: ncpio.Name,
 						Data: data,
